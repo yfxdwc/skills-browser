@@ -41,19 +41,21 @@ Hermes Skills 的轻量级 Web 查看器 — 三个面板布局：
 
 ### Ecosystem 区块
 
-分为 **Hermes**（🔥）和 **OpenClaw**（🦞）两个区块：
+分为 **☤ Hermes** 和 **🦞 OpenClaw** 两个区块（均使用官方 Logo 符号）：
 
-- **顶部边线** 2px，ecosystem 弱强调色，opacity 0.88
-- **标签文字** 65% 透明度，ecosystem 弱强调色
+- **顶部边线** 2px，ecosystem 官方色，opacity 0.88
+- **标签文字** 70% 透明度，官方色
 - **区块整体** opacity 0.88，自然融入背景
+- **Hermes** 使用衬线字体（Palatino/Georgia），还原官网 serif 风格
 
 ### Ecosystem 官方配色
 
-| Ecosystem | 官方品牌色 | 用于 |
-|----------|-----------|------|
-| Hermes | `#F5C542`（金色） | agent 选中态 icon 边框/文字（opacity 0.65 淡化） |
-| OpenClaw | `#E81B25`（红色） | 同上 |
-| Feishu Accent | `#0B6BF2`（蓝） | 全局交互强调色 |
+| Ecosystem | 官方品牌色 | 来源 | 用于 |
+|----------|-----------|------|------|
+| Hermes | `#FFD700`（金黄） | [官网](https://hermes-agent.nousresearch.com/) GitHub Banner | ecosystem 顶边/标签/选中态 |
+| Hermes | `#ffe6cb`（暖象牙白） | [官网 CSS 变量](https://hermes-agent.nousresearch.com/) `--midground-base` | Hermes 选中态背景（`#FFFCF0` 浅调适配） |
+| OpenClaw | `#E81B25`（红色） | [GitHub](https://github.com/openclaw/openclaw) | ecosystem 顶边/标签/选中态 |
+| Feishu Accent | `#0B6BF2`（蓝） | — | 全局交互强调色 |
 
 ### 字体
 
