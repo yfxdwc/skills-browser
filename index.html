@@ -109,13 +109,19 @@ body{
   border-color:rgba(232,93,4,.4)!important;
 }
 /* OpenClaw — Workspace skills：蓝色强调 */
-.agent-header.special-agent[data-agent="openclaw"] .agent-icon{
+.agent-header.special-agent[data-agent="openclaw"] .agent-icon,
+.agent-header.special-agent[data-agent="openclaw-main"] .agent-icon,
+.agent-header.special-agent[data-agent="openclaw-cad"] .agent-icon{
   background:linear-gradient(135deg,#0369A1,#0EA5E9);
   color:#fff;
   box-shadow:0 2px 8px rgba(3,105,161,.35);
 }
-.agent-header.special-agent[data-agent="openclaw"]{border-color:rgba(3,105,161,.2)!important}
-.agent-header.special-agent[data-agent="openclaw"].open{
+.agent-header.special-agent[data-agent="openclaw"],
+.agent-header.special-agent[data-agent="openclaw-main"],
+.agent-header.special-agent[data-agent="openclaw-cad"]{border-color:rgba(3,105,161,.2)!important}
+.agent-header.special-agent[data-agent="openclaw"].open,
+.agent-header.special-agent[data-agent="openclaw-main"].open,
+.agent-header.special-agent[data-agent="openclaw-cad"].open{
   background:#E0F2FE;
   color:#0369A1;
   border-color:rgba(3,105,161,.4)!important;
@@ -143,7 +149,9 @@ body{
   border:1px solid var(--border);
 }
 .agent-header.special-agent[data-agent="hermes"].open .agent-arrow{color:#E85D04}
-.agent-header.special-agent[data-agent="openclaw"].open .agent-arrow{color:#0369A1}
+.agent-header.special-agent[data-agent="openclaw"].open .agent-arrow,
+.agent-header.special-agent[data-agent="openclaw-main"].open .agent-arrow,
+.agent-header.special-agent[data-agent="openclaw-cad"].open .agent-arrow{color:#0369A1}
 
 .agent-skills{display:none;padding:4px 0 8px 0}
 .agent-skills.open{display:block}
@@ -465,11 +473,12 @@ body{
 /* AGENT META                                                               */
 /* ══════════════════════════════════════════════════════════════════════ */
 const AGENT_META = {
-  hermes:   { color: '#E85D04', bg: '#FFF8F0', icon: '⚡', desc: '共享 Skill · 全局', special: true },
-  openclaw: { color: '#0369A1', bg: '#E0F2FE', icon: '🦾', desc: 'OpenClaw · Workspace', special: true },
+  hermes:       { color: '#E85D04', bg: '#FFF8F0', icon: '⚡', desc: '共享 Skill · 全局', special: true },
+  openclaw:     { color: '#0369A1', bg: '#E0F2FE', icon: '🦾', desc: 'OpenClaw · 共享', special: true },
+  'openclaw-main': { color: '#0369A1', bg: '#E0F2FE', icon: '🖥️', desc: 'OpenClaw · main', special: true },
+  'openclaw-cad':  { color: '#0369A1', bg: '#E0F2FE', icon: '🎨', desc: 'OpenClaw · cad', special: true },
   eva:      { color: '#4F6AF0', bg: '#EEF2FF', icon: '🧠', desc: 'AI 助手 · 生活 & 思考' },
   walle:    { color: '#16A34A', bg: '#F0FDF4', icon: '⚙️',  desc: '工作助手 · 业务 & 执行' },
-  cad:      { color: '#7C3AED', bg: '#F5F3FF', icon: '🎨',  desc: 'CAD Agent · 设计 & 代码' },
   ima:      { color: '#DB2777', bg: '#FDF2F8', icon: '💎',  desc: 'Ima Agent' },
   sysadmin: { color: '#D97706', bg: '#FFFBEB', icon: '🛡️', desc: '系统管理员' },
 };

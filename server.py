@@ -22,10 +22,10 @@ INDEX_HTML = Path(__file__).parent / 'index.html'
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 HERMES_SKILLS = Path.home() / '.hermes' / 'skills'
-OPENCLAW_SKILLS = Path.home() / '.openclaw'
+OPENCLAW_SHARED = Path.home() / '.openclaw' / 'skills'
 OPENCLAW_WORKSPACES = [
-    ('main',   Path.home() / '.openclaw' / 'workspace' / 'skills'),
-    ('cad',    Path.home() / '.openclaw' / 'workspace_cad' / 'skills'),
+    ('openclaw-main', Path.home() / '.openclaw' / 'workspace' / 'skills'),
+    ('openclaw-cad',  Path.home() / '.openclaw' / 'workspace_cad' / 'skills'),
 ]
 
 def get_agents():
@@ -35,47 +35,35 @@ def get_agents():
         for d in base.iterdir():
             if d.is_dir() and (d / 'skills').is_dir():
                 agents.add(d.name)
-    # Also include ~/.hermes/skills/ as "hermes" agent if it has skills
+    # ~/.hermes/skills/ → "hermes"
     if HERMES_SKILLS.exists() and any(HERMES_SKILLS.rglob('SKILL.md')):
         agents.add('hermes')
-    # Also include OpenClaw workspace skills
-    if any(ws.exists() for _, ws in OPENCLAW_WORKSPACES):
+    # ~/.openclaw/skills/ → "openclaw"
+    if OPENCLAW_SHARED.exists() and any(OPENCLAW_SHARED.rglob('SKILL.md')):
         agents.add('openclaw')
-    # Always put 'hermes' first, then alphabetically
+    # OpenClaw workspace skills → "openclaw-main", "openclaw-cad"
+    for ws_name, ws_dir in OPENCLAW_WORKSPACES:
+        if ws_dir.exists() and any(ws_dir.rglob('SKILL.md')):
+            agents.add(ws_name)
+    # hermes & openclaw pinned first, rest alphabetically
     sorted_agents = sorted(agents)
-    if 'hermes' in sorted_agents:
-        sorted_agents.remove('hermes')
-        sorted_agents.insert(0, 'hermes')
+    for pinned in ('hermes', 'openclaw'):
+        if pinned in sorted_agents:
+            sorted_agents.remove(pinned)
+            sorted_agents.insert(0, pinned)
     return sorted_agents
 
 def get_skills_for_agent(agent):
     if agent == 'hermes':
         skills_dir = HERMES_SKILLS
     elif agent == 'openclaw':
-        # Merge multiple OpenClaw workspaces into one virtual agent
-        flat = []
-        for ws_name, ws_dir in OPENCLAW_WORKSPACES:
-            if not ws_dir.exists():
-                continue
-            for md_path in sorted(ws_dir.rglob('SKILL.md')):
-                rel = md_path.parent.relative_to(ws_dir)
-                parts = rel.parts
-                name = parts[-1] if parts else md_path.parent.name
-                # Prefix name with workspace to avoid collisions
-                display_name = f'{ws_name}/{name}' if len(parts) == 1 else f'{ws_name}/{"/".join(parts)}'
-                flat.append({
-                    'name': display_name,
-                    'orig_name': name,
-                    'path': str(md_path.parent),
-                    'relPath': f'{ws_name}/{rel}',
-                    'depth': len(parts) + 1,
-                    'workspace': ws_name,
-                })
-        flat.sort(key=lambda s: (s['workspace'], s['relPath']))
-        return flat, _build_tree(flat)
+        skills_dir = OPENCLAW_SHARED
+    elif agent.startswith('openclaw-'):
+        ws_map = dict(OPENCLAW_WORKSPACES)
+        skills_dir = ws_map.get(agent)
     else:
         skills_dir = SKILLS_BASE / agent / 'skills'
-    if not skills_dir.exists():
+    if not skills_dir or not skills_dir.exists():
         return [], []
     flat = []
     for md_path in sorted(skills_dir.rglob('SKILL.md')):
