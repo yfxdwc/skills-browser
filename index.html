@@ -96,7 +96,7 @@ body{
 }
 .agent-header:hover{background:var(--bg1);color:var(--text);border-color:var(--border)}
 .agent-header.open{background:var(--accent-light);color:var(--accent);border-color:rgba(11,107,242,.2)}
-/* Hermes — 共享 skills：橙色强调 */
+/* Hermes — 橙色强调 */
 .agent-header.special-agent[data-agent="hermes"] .agent-icon{
   background:linear-gradient(135deg,#E85D04,#FFBA08);
   color:#fff;
@@ -104,25 +104,29 @@ body{
 }
 .agent-header.special-agent[data-agent="hermes"]{border-color:rgba(232,93,4,.2)!important}
 .agent-header.special-agent[data-agent="hermes"].open{
-  background:#FFF8F0;
   color:#E85D04;
   border-color:rgba(232,93,4,.4)!important;
 }
-/* OpenClaw — Workspace skills：蓝色强调 */
-.agent-header.special-agent[data-agent="openclaw"] .agent-icon,
-.agent-header.special-agent[data-agent="openclaw-main"] .agent-icon,
-.agent-header.special-agent[data-agent="openclaw-cad"] .agent-icon{
+/* OpenClaw — 蓝色强调 */
+.agent-header.special-agent[data-agent="openclaw"] .agent-icon{
   background:linear-gradient(135deg,#0369A1,#0EA5E9);
   color:#fff;
   box-shadow:0 2px 8px rgba(3,105,161,.35);
 }
-.agent-header.special-agent[data-agent="openclaw"],
+.agent-header.special-agent[data-agent="openclaw"]{border-color:rgba(3,105,161,.2)!important}
+.agent-header.special-agent[data-agent="openclaw"].open{
+  color:#0369A1;
+  border-color:rgba(3,105,161,.4)!important;
+}
+.agent-header.special-agent[data-agent="openclaw-main"] .agent-icon,
+.agent-header.special-agent[data-agent="openclaw-cad"] .agent-icon{
+  background:linear-gradient(135deg,#0369A1,#0EA5E9);
+  color:#fff;
+}
 .agent-header.special-agent[data-agent="openclaw-main"],
 .agent-header.special-agent[data-agent="openclaw-cad"]{border-color:rgba(3,105,161,.2)!important}
-.agent-header.special-agent[data-agent="openclaw"].open,
 .agent-header.special-agent[data-agent="openclaw-main"].open,
 .agent-header.special-agent[data-agent="openclaw-cad"].open{
-  background:#E0F2FE;
   color:#0369A1;
   border-color:rgba(3,105,161,.4)!important;
 }
@@ -148,10 +152,40 @@ body{
   padding:2px 8px;border-radius:10px;font-weight:600;
   border:1px solid var(--border);
 }
-.agent-header.special-agent[data-agent="hermes"].open .agent-arrow{color:#E85D04}
-.agent-header.special-agent[data-agent="openclaw"].open .agent-arrow,
-.agent-header.special-agent[data-agent="openclaw-main"].open .agent-arrow,
-.agent-header.special-agent[data-agent="openclaw-cad"].open .agent-arrow{color:#0369A1}
+/* Ecosystem sections */
+.eco-section{
+  margin-bottom:4px;border-radius:var(--radius-sm);overflow:hidden;
+  border-top:3px solid var(--eco-top, var(--border));
+  background:var(--eco-bg, var(--bg));
+}
+.eco-header{
+  display:flex;align-items:center;padding:8px 12px;
+  cursor:pointer;user-select:none;
+  background:transparent;
+  border-bottom:1px solid rgba(0,0,0,.06);
+  transition:background .15s;
+}
+.eco-header:hover{background:rgba(0,0,0,.03)}
+.eco-label{
+  flex:1;font-size:10px;font-weight:800;letter-spacing:1.2px;
+  color:var(--eco-top, var(--text2));text-transform:uppercase;
+}
+.eco-arrow{font-size:9px;color:var(--eco-top, var(--text3));transition:transform .2s}
+.eco-header.open .eco-arrow{transform:rotate(180deg)}
+.eco-agents{display:none}
+.eco-agents .agent-item{border-radius:0}
+.eco-agents .agent-header{
+  padding-left:16px;
+  border-top:none!important;
+  border-left:none!important;
+  border-right:none!important;
+  background:transparent!important;
+}
+.eco-agents .agent-header:hover{background:var(--bg1)!important}
+.eco-agents .agent-header.open{
+  background:var(--eco-bg, var(--bg))!important;
+  color:var(--eco-top, var(--accent))!important;
+}
 
 .agent-skills{display:none;padding:4px 0 8px 0}
 .agent-skills.open{display:block}
@@ -546,14 +580,14 @@ body{
 /* AGENT META                                                               */
 /* ══════════════════════════════════════════════════════════════════════ */
 const AGENT_META = {
-  hermes:       { color: '#E85D04', bg: '#FFF8F0', icon: '⚡', desc: '共享 Skill · 全局', special: true },
-  openclaw:     { color: '#0369A1', bg: '#E0F2FE', icon: '🦾', desc: 'OpenClaw · 共享', special: true },
-  'openclaw-main': { color: '#0369A1', bg: '#E0F2FE', icon: '🖥️', desc: 'OpenClaw · main', special: true },
-  'openclaw-cad':  { color: '#0369A1', bg: '#E0F2FE', icon: '🎨', desc: 'OpenClaw · cad', special: true },
-  eva:      { color: '#4F6AF0', bg: '#EEF2FF', icon: '🧠', desc: 'AI 助手 · 生活 & 思考' },
-  walle:    { color: '#16A34A', bg: '#F0FDF4', icon: '⚙️',  desc: '工作助手 · 业务 & 执行' },
-  ima:      { color: '#DB2777', bg: '#FDF2F8', icon: '💎',  desc: 'Ima Agent' },
-  sysadmin: { color: '#D97706', bg: '#FFFBEB', icon: '🛡️', desc: '系统管理员' },
+  hermes:       { color: '#E85D04', bg: '#FFF8F0', icon: '⚡', desc: '共享 Skill', ecosystem: 'hermes' },
+  openclaw:     { color: '#0369A1', bg: '#E0F2FE', icon: '🦾', desc: '共享 Skill', ecosystem: 'openclaw' },
+  'openclaw-main': { color: '#0369A1', bg: '#E0F2FE', icon: '🖥️', desc: 'OpenClaw · main', ecosystem: 'openclaw' },
+  'openclaw-cad':  { color: '#0369A1', bg: '#E0F2FE', icon: '🎨', desc: 'OpenClaw · cad', ecosystem: 'openclaw' },
+  eva:      { color: '#4F6AF0', bg: '#EEF2FF', icon: '🧠', desc: 'AI 助手 · 生活 & 思考', ecosystem: null },
+  walle:    { color: '#16A34A', bg: '#F0FDF4', icon: '⚙️',  desc: '工作助手 · 业务 & 执行', ecosystem: null },
+  ima:      { color: '#DB2777', bg: '#FDF2F8', icon: '💎',  desc: 'Ima Agent', ecosystem: null },
+  sysadmin: { color: '#D97706', bg: '#FFFBEB', icon: '🛡️', desc: '系统管理员', ecosystem: null },
 };
 function meta(agent) { return AGENT_META[agent] || { color: '#6B7280', bg: '#F9FAFB', icon: '🤖', desc: agent } }
 function cap(s) { return s ? s[0].toUpperCase() + s.slice(1) : s }
@@ -595,14 +629,15 @@ const dom = {
 /* STATE                                                                     */
 /* ══════════════════════════════════════════════════════════════════════ */
 const S = {
-  agents: [],           // ['cad','eva','ima','sysadmin','walle']
-  skills: {},           // { agent: [ {name,path,depth}, … ] }
-  skillMap: {},         // { `si-${agent}-${i}`: path }
-  openAgent: null,      // currently selected agent
-  openSkill: null,      // { agent, name, path }
-  editMode: false,      // developer mode
-  editOriginal: '',     // original content when edit started
-  editDirty: false,     // unsaved changes
+  agents: [],
+  skills: {},
+  skillMap: {},
+  openAgent: null,
+  openSkill: null,
+  editMode: false,
+  editOriginal: '',
+  editDirty: false,
+  openGroups: {},  // { ecosystem: bool }
 
   // Chat
   chatAgents: [],       // same as agents but ordered for dropdown
@@ -668,18 +703,95 @@ async function init() {
 /* ══════════════════════════════════════════════════════════════════════ */
 /* AGENT LIST                                                               */
 /* ══════════════════════════════════════════════════════════════════════ */
+// Ecosystem: which shared agent is the "parent" of an agent
+const ECOSYSTEM = {
+  hermes: 'hermes',
+  openclaw: 'openclaw',
+  'openclaw-main': 'openclaw',
+  'openclaw-cad': 'openclaw',
+};
+const ECOSYSTEM_COLOR = {
+  hermes:   { top: '#E85D04', bg: '#FFF8F0', label: 'HERMES' },
+  openclaw: { top: '#0369A1', bg: '#E0F2FE', label: 'OPENCLAW' },
+};
+
 function renderAgentList() {
   dom.agentList.innerHTML = '';
+
+  // Separate agents into ecosystems and standalone
+  const ecosystemAgents = {};  // ecosystem -> [agents]
+  const standalone = [];
+
   for (const agent of S.agents) {
+    const eco = ECOSYSTEM[agent];
+    if (eco) {
+      if (!ecosystemAgents[eco]) ecosystemAgents[eco] = [];
+      ecosystemAgents[eco].push(agent);
+    } else {
+      standalone.push(agent);
+    }
+  }
+
+  // Render ecosystem sections
+  for (const eco of Object.keys(ecosystemAgents)) {
+    const agents_in_eco = ecosystemAgents[eco];
+    const ecoMeta = ECOSYSTEM_COLOR[eco];
+
+    // Section container
+    const section = document.createElement('div');
+    section.className = 'eco-section';
+    section.style.setProperty('--eco-top', ecoMeta.top);
+    section.style.setProperty('--eco-bg', ecoMeta.bg);
+    section.id = `eco-${eco}`;
+
+    // Section header (clickable to collapse)
+    const hdr = document.createElement('div');
+    hdr.className = 'eco-header';
+    hdr.dataset.eco = eco;
+    hdr.innerHTML = `
+      <span class="eco-label">${ecoMeta.label}</span>
+      <span class="eco-arrow">▼</span>`;
+    hdr.addEventListener('click', () => toggleEcosystem(eco));
+    section.appendChild(hdr);
+
+    // Agent items
+    const list = document.createElement('div');
+    list.className = 'eco-agents';
+    list.id = `eco-agents-${eco}`;
+    list.style.display = S.openGroups[eco] ? 'block' : 'none';
+
+    for (const agent of agents_in_eco) {
+      const m = meta(agent);
+      const isShared = (agent === eco);
+      const a = document.createElement('div');
+      a.className = 'agent-item' + (isShared ? ' shared-agent' : '');
+      a.innerHTML = `
+        <div class="agent-header${isShared ? ' special-agent' : ''}" data-agent="${agent}">
+          <span class="agent-icon" style="background:${m.bg};color:${m.color}">${m.icon}</span>
+          <span class="agent-name">${isShared ? `<span style="color:${ecoMeta.top};font-weight:800">${m.icon}</span> ` : ''}${cap(agent)}</span>
+          ${isShared ? `<span class="agent-badge" style="background:${ecoMeta.top}">共享</span>` : `<span class="agent-badge ws-badge" style="background:${ecoMeta.top}">${eco}</span>`}
+          <span class="agent-count" style="display:none"></span>
+          <span class="agent-arrow">▶</span>
+        </div>
+        <div class="agent-skills" id="skills-${agent}"></div>`;
+      list.appendChild(a);
+      a.querySelector('.agent-header').addEventListener('click', () => toggleAgent(agent));
+    }
+
+    section.appendChild(list);
+    dom.agentList.appendChild(section);
+  }
+
+  // Standalone agents (no ecosystem)
+  for (const agent of standalone) {
     const m = meta(agent);
-    const isSpecial = m.special;
     const item = document.createElement('div');
     item.className = 'agent-item';
     item.innerHTML = `
-      <div class="agent-header${isSpecial ? ' special-agent' : ''}" data-agent="${agent}">
+      <div class="agent-header" data-agent="${agent}">
         <span class="agent-icon" style="background:${m.bg};color:${m.color}">${m.icon}</span>
-        <span class="agent-name">${isSpecial ? `<span style="color:${agent==='hermes'?'#E85D04':'#0369A1'};font-weight:800">${m.icon}</span> ` : ''}${cap(agent)}</span>
-        ${isSpecial ? `<span class="agent-badge" style="${agent==='hermes'?'background:linear-gradient(135deg,#E85D04,#FFBA08)':'background:linear-gradient(135deg,#0369A1,#0EA5E9)'}">${agent==='hermes'?'共享':'WS'}</span>` : ''}
+        <span class="agent-name">${cap(agent)}</span>
+        <span class="agent-count" style="display:none"></span>
         <span class="agent-arrow">▶</span>
       </div>
       <div class="agent-skills" id="skills-${agent}"></div>`;
@@ -688,34 +800,66 @@ function renderAgentList() {
   }
 }
 
+async function toggleEcosystem(eco) {
+  const section = document.getElementById(`eco-${eco}`);
+  const hdr = section.querySelector('.eco-header');
+  const list = document.getElementById(`eco-agents-${eco}`);
+  const isOpen = S.openGroups[eco];
+
+  if (isOpen) {
+    // Collapse
+    hdr.classList.remove('open');
+    list.style.display = 'none';
+    S.openGroups[eco] = false;
+  } else {
+    // Expand
+    hdr.classList.add('open');
+    list.style.display = 'block';
+    S.openGroups[eco] = true;
+    // Auto-open first shared agent if not yet loaded
+    const sharedAgent = eco; // e.g. 'hermes' -> hermes is the shared one
+    const hdr2 = list.querySelector('.agent-header[data-agent]');
+    if (hdr2) toggleAgent(hdr2.dataset.agent);
+  }
+}
+
 async function toggleAgent(agent) {
   const hdr  = document.querySelector(`.agent-header[data-agent="${agent}"]`);
   const list = document.getElementById(`skills-${agent}`);
 
-  // Close if open
   if (hdr.classList.contains('open')) {
     hdr.classList.remove('open');
     list.classList.remove('open');
     return;
   }
 
-  // Open — load skills if not cached
   hdr.classList.add('open');
+
+  // Ensure ecosystem is expanded when a child agent is opened
+  const eco = ECOSYSTEM[agent];
+  if (eco && !S.openGroups[eco]) {
+    const section = document.getElementById(`eco-${eco}`);
+    if (section) {
+      section.querySelector('.eco-header').classList.add('open');
+      document.getElementById(`eco-agents-${eco}`).style.display = 'block';
+      S.openGroups[eco] = true;
+    }
+  }
+
   if (!S.skills[agent]) {
     const r = await fetch(`/api/agents/${agent}`);
     const d = await r.json();
     S.skills[agent] = d.skills || [];
-    // Count badge
     const existing = hdr.querySelector('.agent-count');
     if (existing) {
       existing.textContent = S.skills[agent].length;
+      existing.style.display = 'inline';
     } else {
       const badge = document.createElement('span');
       badge.className = 'agent-count';
       badge.textContent = S.skills[agent].length;
       hdr.appendChild(badge);
     }
-    // Total count
     const total = Object.values(S.skills).reduce((a, v) => a + v.length, 0);
     dom.skillCountLabel.textContent = `${total} skills`;
   }
