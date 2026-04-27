@@ -111,9 +111,38 @@ body{
   border:1px solid var(--border);
 }
 
-.agent-skills{display:none;padding:6px 0 10px 0}
+.agent-skills{display:none;padding:4px 0 8px 0}
 .agent-skills.open{display:block}
 
+/* ── Folder groups ── */
+.skills-group{margin-bottom:2px}
+.skills-group-header{
+  display:flex;align-items:center;
+  padding:7px 12px 7px 16px;
+  font-size:13.5px;font-weight:600;color:var(--text2);
+  cursor:pointer;gap:7px;
+  border-radius:var(--radius-sm);margin-right:8px;
+  transition:all .12s;
+  user-select:none;
+}
+.skills-group-header:hover{background:var(--bg1);color:var(--text)}
+.skills-group-header .folder-arrow{
+  font-size:10px;color:var(--text3);transition:transform .2s;
+}
+.skills-group-header.open .folder-arrow{transform:rotate(90deg);color:var(--accent)}
+.skills-group-header .folder-name{flex:1}
+.skills-group-header .folder-count{
+  font-size:10px;color:var(--text3);background:var(--bg1);
+  padding:1px 6px;border-radius:8px;font-weight:600;
+  border:1px solid var(--border);
+}
+.skills-group-items{
+  display:none;
+  padding:2px 0 4px;
+}
+.skills-group-items.open{display:block}
+
+/* ── Skill items ── */
 .skill-item{
   display:flex;align-items:center;
   padding:8px 12px 8px 32px;
@@ -552,31 +581,94 @@ async function toggleAgent(agent) {
 function renderSkillList(agent, list) {
   const skills = S.skills[agent];
   if (!skills || !skills.length) {
-    list.innerHTML = '<div style="padding:6px 16px;font-size:12px;color:var(--text3)">无 Skill</div>';
+    list.innerHTML = '<div style="padding:6px 16px;font-size:13px;color:var(--text3)">无 Skill</div>';
     return;
   }
-  list.innerHTML = skills.map((s, i) => {
-    const id = `si-${agent}-${i}`;
-    S.skillMap[id] = s.path;   // store path in map
-    const isActive = S.openSkill && S.openSkill.path === s.path && S.openAgent === agent;
-    const indent = (s.depth - 1) * 12;
-    return `<div class="skill-item${isActive ? ' active' : ''}"
-                 id="${id}"
-                 data-agent="${agent}"
-                 data-name="${s.name}">
-      <span class="skill-icon">${s.depth > 1 ? '📁' : '📄'}</span>
-      <span class="skill-name" style="--indent:${indent}px">${escHtml(s.name)}</span>
-      ${s.depth > 1 ? `<span class="skill-agent-badge">${agent}</span>` : ''}
-    </div>`;
-  }).join('');
 
-  // Attach click handlers
+  // Group by folder: depth1 = root (no folder), depth2+ = parent folder name
+  const rootSkills = [];
+  const folders = {};  // folderName -> [skills]
+
+  for (const s of skills) {
+    if (s.depth === 1) {
+      rootSkills.push(s);
+    } else {
+      const parts = s.relPath.split('/');
+      const folder = parts[0];
+      if (!folders[folder]) folders[folder] = [];
+      folders[folder].push(s);
+    }
+  }
+
+  const parts = [];
+
+  // Root skills (depth=1, no folder)
+  for (let i = 0; i < rootSkills.length; i++) {
+    const s = rootSkills[i];
+    const idx = S.skills[agent].indexOf(s);
+    const id = `si-${agent}-${idx}`;
+    S.skillMap[id] = s.path;
+    const active = isActiveSkill(agent, s.path);
+    parts.push(renderSkillItem(agent, s, id, i, active));
+  }
+
+  // Folder groups
+  const folderNames = Object.keys(folders).sort();
+  for (const folder of folderNames) {
+    const folderSkills = folders[folder];
+    const groupId = `sg-${agent}-${folder}`;
+    // Build items HTML
+    const itemsHtml = folderSkills.map((s, fi) => {
+      const idx = S.skills[agent].indexOf(s);
+      const id = `si-${agent}-${idx}`;
+      S.skillMap[id] = s.path;
+      const active = isActiveSkill(agent, s.path);
+      return renderSkillItem(agent, s, id, fi, active, true);
+    }).join('');
+
+    parts.push(`
+      <div class="skills-group" id="${groupId}">
+        <div class="skills-group-header" data-group="${groupId}">
+          <span class="folder-arrow">▶</span>
+          <span class="folder-name">📁 ${escHtml(folder)}</span>
+          <span class="folder-count">${folderSkills.length}</span>
+        </div>
+        <div class="skills-group-items">${itemsHtml}</div>
+      </div>`);
+  }
+
+  list.innerHTML = parts.join('');
+
+  // Attach click handlers for skill items
   list.querySelectorAll('.skill-item').forEach(el => {
     el.addEventListener('click', () => {
-      const path = S.skillMap[el.id];
-      openSkill(el.dataset.agent, el.dataset.name, path);
+      openSkill(el.dataset.agent, el.dataset.name, S.skillMap[el.id]);
     });
   });
+
+  // Attach click handlers for folder group headers
+  list.querySelectorAll('.skills-group-header').forEach(el => {
+    el.addEventListener('click', () => {
+      el.classList.toggle('open');
+      const items = el.nextElementSibling;
+      if (items) items.classList.toggle('open');
+    });
+  });
+}
+
+function renderSkillItem(agent, s, id, _serial, isActive, nested = false) {
+  const indent = nested ? (s.depth - 1) * 12 + 8 : 8;
+  return `<div class="skill-item${isActive ? ' active' : ''}"
+               id="${id}"
+               data-agent="${agent}"
+               data-name="${s.name}">
+    <span class="skill-icon">${nested ? '　' : '📄'}</span>
+    <span class="skill-name" style="--indent:${indent}px">${escHtml(s.name)}</span>
+  </div>`;
+}
+
+function isActiveSkill(agent, path) {
+  return S.openSkill && S.openSkill.path === path && S.openAgent === agent;
 }
 
 /* ══════════════════════════════════════════════════════════════════════ */
