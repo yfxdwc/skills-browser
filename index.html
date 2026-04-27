@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Skills Browser</title>
+<style>
+/* ── Reset & Variables ──────────────────────────────────────────────── */
+*,::before,::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:        #ffffff;
+  --bg0:       #F8F9FB;
+  --bg1:       #EEF1F6;
+  --bg2:       #E4E8F0;
+  --border:    #E2E6F0;
+  --border2:   #C8D0E0;
+  --text:      #1A1D27;
+  --text2:     #4B5268;
+  --text3:     #8892A8;
+  --accent:    #4F6AF0;
+  --accent2:   #3B5CE4;
+  --accent-light: #EEF2FF;
+  --accent-glow: rgba(79,106,240,.12);
+  --danger:    #EF4444;
+  --w-left:    264px;
+  --w-right:   368px;
+  --radius:    12px;
+  --radius-sm: 8px;
+  --shadow:    0 1px 4px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.06);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
+  --font:      'Inter','-apple-system','BlinkMacSystemFont','Segoe UI',sans-serif;
+  --mono:      'JetBrains Mono','Fira Code','Consolas',monospace;
+}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg0);
+  color:var(--text);
+  font-family:var(--font);
+  font-size:14px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* ── Scrollbars ──────────────────────────────────────────────────────── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+::selection{background:var(--accent-light);color:var(--accent)}
+
+/* ── Resize Handles ──────────────────────────────────────────────────── */
+.resize-handle{
+  width:5px;flex-shrink:0;cursor:col-resize;
+  background:transparent;position:relative;z-index:20;
+}
+.resize-handle::after{
+  content:'';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);width:3px;height:40px;border-radius:2px;
+  background:var(--border2);opacity:0;transition:opacity .2s;
+}
+.resize-handle:hover::after{opacity:1;background:var(--accent)}
+
+/* ══════════════════════════════════════════════════════════════════════ */
+/* LEFT PANEL                                                               */
+/* ══════════════════════════════════════════════════════════════════════ */
+.left{
+  width:var(--w-left);min-width:var(--w-left);
+  background:var(--bg);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:2px 0 8px rgba(0,0,0,.03);z-index:10;
+}
+.left-header{
+  padding:20px 16px 14px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;flex-shrink:0;background:var(--bg);
+}
+.left-logo{
+  width:32px;height:32px;
+  background:linear-gradient(135deg,#4F6AF0,#6B8AFF);
+  border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;
+  font-size:15px;flex-shrink:0;box-shadow:0 2px 8px rgba(79,106,240,.3);color:#fff;
+}
+.left-title{font-size:14px;font-weight:700;color:var(--text);letter-spacing:-.2px}
+.left-subtitle{font-size:11px;color:var(--text3);margin-top:1px}
+
+.agent-list{flex:1;overflow-y:auto;padding:10px 8px}
+.agent-item{margin-bottom:2px}
+
+.agent-header{
+  display:flex;align-items:center;padding:9px 10px;
+  border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:600;
+  color:var(--text2);gap:9px;transition:all .15s;
+  border:1px solid transparent;
+}
+.agent-header:hover{background:var(--bg1);color:var(--text);border-color:var(--border)}
+.agent-header.open{background:var(--accent-light);color:var(--accent);border-color:rgba(79,106,240,.2)}
+.agent-icon{
+  width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;flex-shrink:0;
+}
+.agent-header.open .agent-icon{box-shadow:0 0 0 3px rgba(79,106,240,.15)}
+.agent-name{flex:1}
+.agent-arrow{color:var(--text3);font-size:9px;transition:transform .2s}
+.agent-header.open .agent-arrow{transform:rotate(90deg);color:var(--accent)}
+.agent-count{
+  font-size:10px;color:var(--text3);background:var(--bg1);
+  padding:1px 7px;border-radius:10px;font-weight:600;
+  border:1px solid var(--border);
+}
+
+.agent-skills{display:none;padding:4px 0 8px 0}
+.agent-skills.open{display:block}
+
+.skill-item{
+  display:flex;align-items:center;
+  padding:7px 10px 7px 28px;
+  font-size:12.5px;color:var(--text2);cursor:pointer;gap:7px;
+  border-left:2px solid transparent;
+  transition:all .12s;
+  border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin-right:8px;
+  user-select:none;
+}
+.skill-item:hover{color:var(--text);background:var(--bg1);border-left-color:var(--border2)}
+.skill-item.active{color:var(--accent);background:var(--accent-light);border-left-color:var(--accent);font-weight:600}
+.skill-icon{font-size:11px;opacity:.6;flex-shrink:0}
+.skill-item:hover .skill-icon,.skill-item.active .skill-icon{opacity:1}
+.skill-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:var(--indent,0)}
+.skill-agent-badge{
+  font-size:9px;padding:1px 6px;border-radius:6px;
+  background:var(--bg2);color:var(--text3);flex-shrink:0;font-weight:700;
+  border:1px solid var(--border);letter-spacing:.2px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════ */
+/* CENTER PANEL                                                             */
+/* ══════════════════════════════════════════════════════════════════════ */
+.center{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg0)}
+
+.center-header{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 20px;border-bottom:1px solid var(--border);
+  background:var(--bg);flex-shrink:0;
+  min-height:56px;
+}
+.center-header-icon{
+  width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;flex-shrink:0;
+}
+.skill-title{font-size:15px;font-weight:700;color:var(--text);flex:1}
+.skill-title.loading{color:var(--text3)}
+.skill-title.error{color:var(--danger)}
+.skill-agent-tag{
+  font-size:11px;font-weight:700;padding:2px 9px;border-radius:8px;
+  display:none;flex-shrink:0;
+}
+.skill-path{
+  font-size:10.5px;color:var(--text3);font-family:var(--mono);
+  display:none;flex-shrink:0;max-width:300px;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.center-body{
+  flex:1;overflow-y:auto;padding:24px 28px;
+  display:flex;flex-direction:column;
+}
+
+.center-empty{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:12px;text-align:center;padding:40px;
+}
+.center-empty-icon{font-size:52px;opacity:.2}
+.center-empty-title{font-size:16px;font-weight:700;color:var(--text2)}
+.center-empty-desc{font-size:13px;color:var(--text3);max-width:260px;line-height:1.8}
+
+/* Skill content styles */
+.sk-content{width:100%;max-width:780px}
+.sk-content h1{font-size:1.65em;font-weight:800;color:var(--text);margin:0 0 16px;padding-bottom:10px;border-bottom:2px solid var(--border)}
+.sk-content h2{font-size:1.2em;font-weight:700;color:var(--text);margin:24px 0 10px}
+.sk-content h3{font-size:1em;font-weight:700;color:var(--text);margin:18px 0 8px}
+.sk-content h4{font-size:.9em;font-weight:700;color:var(--text2);margin:14px 0 6px}
+.sk-content p{margin:10px 0;color:#3A4058;line-height:1.9;font-size:14px}
+.sk-content p:first-child{margin-top:0}
+.sk-content ul,.sk-content ol{margin:10px 0;padding-left:24px;color:#3A4058;font-size:14px;line-height:1.9}
+.sk-content li{margin:4px 0}
+.sk-content ul{list-style:disc}
+.sk-content ol{list-style:decimal}
+.sk-content a{color:var(--accent);text-decoration:none;font-weight:500;border-bottom:1px solid rgba(79,106,240,.3)}
+.sk-content a:hover{border-bottom-color:var(--accent)}
+.sk-content strong{font-weight:700;color:var(--text)}
+.sk-content em{font-style:italic;color:var(--text2)}
+.sk-content code{font-family:var(--mono);font-size:.86em;color:var(--accent2);background:var(--bg1);padding:1px 6px;border-radius:4px}
+.sk-content pre{background:#1A1D27;border-radius:var(--radius);padding:16px 18px;overflow-x:auto;margin:14px 0}
+.sk-content pre code{background:none;padding:0;color:#E4E8F0;font-size:.82em;line-height:1.75}
+.sk-content blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--accent);background:var(--bg0);border-radius:0 var(--radius-sm) var(--radius-sm) 0;color:var(--text2);font-style:italic;font-size:13.5px}
+.sk-content hr{margin:20px 0;border:none;border-top:1px solid var(--border)}
+
+/* ══════════════════════════════════════════════════════════════════════ */
+/* RIGHT PANEL                                                              */
+/* ══════════════════════════════════════════════════════════════════════ */
+.right{
+  width:var(--w-right);min-width:var(--w-right);
+  background:var(--bg);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;z-index:10;
+}
+.right-header{
+  padding:14px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;flex-shrink:0;background:var(--bg);
+}
+.right-header-icon{font-size:14px;opacity:.7}
+.right-header-title{font-size:13.5px;font-weight:700;color:var(--text);flex:1}
+.right-header-agent{
+  font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px;
+  background:var(--bg1);color:var(--text3);flex-shrink:0;
+}
+
+.chat-area{flex:1;overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:12px}
+
+.chat-welcome{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;text-align:center;padding:20px;
+}
+.chat-welcome-avatar{
+  width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:18px;margin-bottom:4px;
+}
+.chat-welcome-name{font-size:15px;font-weight:800;color:var(--text)}
+.chat-welcome-desc{font-size:12px;color:var(--text3);max-width:190px;line-height:1.7}
+
+.chat-msg{display:flex;gap:9px;align-items:flex-start}
+.chat-msg.user{flex-direction:row-reverse}
+.avatar{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;
+}
+.avatar-A{}
+.avatar-U{background:var(--bg2);color:var(--text3);font-size:10px}
+.bubble{
+  max-width:75%;padding:9px 13px;border-radius:14px;
+  font-size:13.5px;line-height:1.65;
+  word-break:break-word;
+}
+.chat-msg.assistant .bubble{background:var(--bg1);color:var(--text);border-bottom-left-radius:4px}
+.chat-msg.user .bubble{background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+.bubble-error{background:var(--bg2)!important;color:var(--danger)!important;border-color:var(--danger)!important;font-size:12.5px}
+
+.chat-typing{
+  display:flex;gap:6px;padding:2px 8px;align-items:center;
+}
+.chat-typing span{
+  width:6px;height:6px;border-radius:50%;background:var(--text3);
+  animation:tyBounce 1.3s infinite;
+}
+.chat-typing span:nth-child(2){animation-delay:.2s}
+.chat-typing span:nth-child(3){animation-delay:.4s}
+@keyframes tyBounce{
+  0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}
+}
+
+.chat-input-bar{
+  padding:12px 14px 14px;border-top:1px solid var(--border);
+  display:flex;gap:9px;align-items:flex-end;flex-shrink:0;background:var(--bg);
+}
+.chat-input{
+  flex:1;background:var(--bg0);border:1px solid var(--border2);color:var(--text);
+  border-radius:12px;padding:10px 14px;font-size:13.5px;resize:none;
+  min-height:42px;max-height:120px;font-family:var(--font);line-height:1.55;
+  transition:all .15s;box-shadow:var(--shadow-sm);
+}
+.chat-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);background:var(--bg)}
+.chat-input::placeholder{color:var(--text3)}
+.chat-send{
+  width:40px;height:40px;
+  background:linear-gradient(135deg,#4F6AF0,#5B7CF5);border:none;border-radius:10px;
+  color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .15s;box-shadow:0 2px 8px rgba(79,106,240,.3);
+}
+.chat-send:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(79,106,240,.4)}
+.chat-send:active{transform:translateY(0)}
+.chat-send:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* ── Utility ──────────────────────────────────────────────────────────── */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- LEFT ────────────────────────────────────────────────────────────────── -->
+<div class="left" id="leftPanel">
+  <div class="left-header">
+    <div class="left-logo">⚡</div>
+    <div class="left-titles">
+      <div class="left-title">Skills Browser</div>
+      <div class="left-subtitle" id="skillCountLabel">加载中…</div>
+    </div>
+  </div>
+  <div class="agent-list" id="agentList"></div>
+</div>
+
+<div class="resize-handle" id="resizeLeft"></div>
+
+<!-- CENTER ──────────────────────────────────────────────────────────────── -->
+<div class="center" id="centerPanel">
+  <div class="center-header" id="centerHeader">
+    <div class="center-header-icon" id="centerIcon">📄</div>
+    <span class="skill-title" id="centerTitle">选择左侧 Skill</span>
+    <span class="skill-agent-tag" id="centerAgentTag"></span>
+    <span class="skill-path" id="centerPath"></span>
+  </div>
+  <div class="center-body" id="centerBody">
+    <div class="center-empty" id="centerEmpty">
+      <div class="center-empty-icon">📚</div>
+      <div class="center-empty-title">选择 Skill 查看内容</div>
+      <div class="center-empty-desc">点击左侧 Agent 展开列表，再点击任意 Skill 即可查看内容并开始对话</div>
+    </div>
+    <!-- skill content injected here -->
+    <div class="sk-content" id="skContent" style="display:none"></div>
+  </div>
+</div>
+
+<div class="resize-handle" id="resizeRight"></div>
+
+<!-- RIGHT ───────────────────────────────────────────────────────────────── -->
+<div class="right" id="rightPanel">
+  <div class="right-header">
+    <span class="right-header-icon">💬</span>
+    <span class="right-header-title">对话</span>
+    <select id="chatAgent" style="background:var(--bg1);border:1px solid var(--border2);border-radius:6px;padding:2px 6px;font-size:11px;color:var(--text3);font-family:var(--font)"></select>
+  </div>
+  <div class="chat-area" id="chatArea">
+    <div class="chat-welcome" id="chatWelcome">
+      <div class="chat-welcome-avatar" id="chatWelcomeAvatar">🤖</div>
+      <div class="chat-welcome-name" id="chatWelcomeName">Assistant</div>
+      <div class="chat-welcome-desc" id="chatWelcomeDesc">选择一个 Agent 开始对话</div>
+    </div>
+    <div id="chatMessages"></div>
+  </div>
+  <div class="chat-input-bar">
+    <textarea class="chat-input" id="chatInput" rows="1" placeholder="输入消息，按 Enter 发送…" aria-label="输入消息"></textarea>
+    <button class="chat-send" id="chatSend" disabled aria-label="发送">▶</button>
+  </div>
+</div>
+
+</div>
+<script>
+/* ══════════════════════════════════════════════════════════════════════ */
+/* AGENT META                                                               */
+/* ══════════════════════════════════════════════════════════════════════ */
+const AGENT_META = {
+  eva:      { color: '#4F6AF0', bg: '#EEF2FF', icon: '🧠', desc: 'AI 助手 · 生活 & 思考' },
+  walle:    { color: '#16A34A', bg: '#F0FDF4', icon: '⚙️',  desc: '工作助手 · 业务 & 执行' },
+  cad:      { color: '#7C3AED', bg: '#F5F3FF', icon: '🎨',  desc: 'CAD Agent · 设计 & 代码' },
+  ima:      { color: '#DB2777', bg: '#FDF2F8', icon: '💎',  desc: 'Ima Agent' },
+  sysadmin: { color: '#D97706', bg: '#FFFBEB', icon: '🛡️', desc: '系统管理员' },
+};
+function meta(agent) { return AGENT_META[agent] || { color: '#6B7280', bg: '#F9FAFB', icon: '🤖', desc: agent } }
+function cap(s) { return s ? s[0].toUpperCase() + s.slice(1) : s }
+
+/* ══════════════════════════════════════════════════════════════════════ */
+/* DOM CACHE — all elements fetched once                                      */
+/* ══════════════════════════════════════════════════════════════════════ */
+const $ = id => document.getElementById(id);
+const dom = {
+  agentList:      $('agentList'),
+  skillCountLabel:$('skillCountLabel'),
+  centerIcon:     $('centerIcon'),
+  centerTitle:    $('centerTitle'),
+  centerAgentTag: $('centerAgentTag'),
+  centerPath:     $('centerPath'),
+  centerBody:     $('centerBody'),
+  centerEmpty:    $('centerEmpty'),
+  skContent:      $('skContent'),
+  chatAgent:      $('chatAgent'),
+  chatArea:       $('chatArea'),
+  chatMessages:   $('chatMessages'),
+  chatInput:      $('chatInput'),
+  chatSend:       $('chatSend'),
+  chatWelcome:    $('chatWelcome'),
+  chatWelcomeAvatar: $('chatWelcomeAvatar'),
+  chatWelcomeName:  $('chatWelcomeName'),
+  chatWelcomeDesc:  $('chatWelcomeDesc'),
+};
+
+/* ══════════════════════════════════════════════════════════════════════ */
+/* STATE                                                                     */
+/* ══════════════════════════════════════════════════════════════════════ */
+const S = {
+  agents: [],           // ['cad','eva','ima','sysadmin','walle']
+  skills: {},           // { agent: [ {name,path,depth}, … ] }
+  skillMap: {},         // { `si-${agent}-${i}`: path }   — avoids dataset.path issues
+  openAgent: null,      // currently selected agent
+  openSkill: null,      // { agent, name, path }
+
+  // Chat
+  chatAgents: [],       // same as agents but ordered for dropdown
+  chatCurrent: null,    // current chat agent
+  conversations: {},    // { agent: [ {role:'user'|'assistant', content}, … ] }
+  streaming: false,
+};
+
+/* ══════════════════════════════════════════════════════════════════════ */
+/* INIT                                                                      */
+/* ══════════════════════════════════════════════════════════════════════ */
+async function init() {
+  // Agents
+  const r = await fetch('/api/agents');
+  const { agents } = await r.json();
+  S.agents = agents;
+
+  renderAgentList();
+
+  // Chat dropdown
+  dom.chatAgent.innerHTML = agents.map(a => `<option value="${a}">${cap(a)}</option>`).join('');
+  if (agents.length) {
+    S.chatCurrent = agents[0];
+    dom.chatAgent.value = agents[0];
+    updateChatWelcome(agents[0]);
+  }
+
+  dom.chatAgent.addEventListener('change', e => {
+    S.chatCurrent = e.target.value;
+    renderChat(S.chatCurrent);
+  });
+
+  // Chat input
+  dom.chatInput.addEventListener('input', () => {
+    dom.chatInput.style.height = 'auto';
+    dom.chatInput.style.height = Math.min(dom.chatInput.scrollHeight, 120) + 'px';
+    dom.chatSend.disabled = !dom.chatInput.value.trim();
+  });
+  dom.chatInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (dom.chatInput.value.trim()) sendMessage();
+    }
+  });
+  dom.chatSend.addEventListener('click', () => { if (dom.chatInput.value.trim()) sendMessage(); });
+
+  // Resize handles
+  setupResize();
+}
+
+/* ══════════════════════════════════════════════════════════════════════ */
+/* AGENT LIST                                                               */
+/* ══════════════════════════════════════════════════════════════════════ */
+function renderAgentList() {
+  dom.agentList.innerHTML = '';
+  for (const agent of S.agents) {
+    const m = meta(agent);
+    const item = document.createElement('div');
+    item.className = 'agent-item';
+    item.innerHTML = `
+      <div class="agent-header" data-agent="${agent}">
+        <span class="agent-icon" style="background:${m.bg};color:${m.color}">${m.icon}</span>
+        <span class="agent-name">${cap(agent)}</span>
+        <span class="agent-arrow">▶</span>
+      </div>
+      <div class="agent-skills" id="skills-${agent}"></div>`;
+    dom.agentList.appendChild(item);
+    item.querySelector('.agent-header').addEventListener('click', () => toggleAgent(agent));
+  }
+}
+
+async function toggleAgent(agent) {
+  const hdr  = document.querySelector(`.agent-header[data-agent="${agent}"]`);
+  const list = document.getElementById(`skills-${agent}`);
+
+  // Close if open
+  if (hdr.classList.contains('open')) {
+    hdr.classList.remove('open');
+    list.classList.remove('open');
+    return;
+  }
+
+  // Open — load skills if not cached
+  hdr.classList.add('open');
+  if (!S.skills[agent]) {
+    const r = await fetch(`/api/agents/${agent}`);
+    const d = await r.json();
+    S.skills[agent] = d.skills || [];
+    // Count badge
+    const existing = hdr.querySelector('.agent-count');
+    if (existing) {
+      existing.textContent = S.skills[agent].length;
+    } else {
+      const badge = document.createElement('span');
+      badge.className = 'agent-count';
+      badge.textContent = S.skills[agent].length;
+      hdr.appendChild(badge);
+    }
+    // Total count
+    const total = Object.values(S.skills).reduce((a, v) => a + v.length, 0);
+    dom.skillCountLabel.textContent = `${total} skills`;
+  }
+  list.classList.add('open');
+  renderSkillList(agent, list);
+}
+
+function renderSkillList(agent, list) {
+  const skills = S.skills[agent];
+  if (!skills || !skills.length) {
+    list.innerHTML = '<div style="padding:6px 16px;font-size:12px;color:var(--text3)">无 Skill</div>';
+    return;
+  }
+  list.innerHTML = skills.map((s, i) => {
+    const id = `si-${agent}-${i}`;
+    S.skillMap[id] = s.path;   // store path in map
+    const isActive = S.openSkill && S.openSkill.path === s.path && S.openAgent === agent;
+    const indent = (s.depth - 1) * 12;
+    return `<div class="skill-item${isActive ? ' active' : ''}"
+                 id="${id}"
+                 data-agent="${agent}"
+                 data-name="${s.name}">
+      <span class="skill-icon">${s.depth > 1 ? '📁' : '📄'}</span>
+      <span class="skill-name" style="--indent:${indent}px">${escHtml(s.name)}</span>
+      ${s.depth > 1 ? `<span class="skill-agent-badge">${agent}</span>` : ''}
+    </div>`;
+  }).join('');
+
+  // Attach click handlers
+  list.querySelectorAll('.skill-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const path = S.skillMap[el.id];
+      openSkill(el.dataset.agent, el.dataset.name, path);
+    });
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════════ */
+/* SKILL CONTENT                                                            */
+/* ══════════════════════════════════════════════════════════════════════ */
+async function openSkill(agent, name, path) {
+  if (!path) {
+    showError(`路径不存在: ${name}`);
+    return;
+  }
+
+  // Loading state
+  setTitle(`${name}…`, 'loading');
+  S.openAgent = agent;
+  S.openSkill = { agent, name, path };
+
+  // Update header metadata
+  const m = meta(agent);
+  dom.centerIcon.textContent = m.icon;
+  dom.centerIcon.style.background = m.bg;
+  dom.centerIcon.style.color = m.color;
+  dom.centerAgentTag.textContent = cap(agent);
+  dom.centerAgentTag.style.display = 'inline-flex';
+  dom.centerAgentTag.style.color = m.color;
+  dom.centerAgentTag.style.background = m.bg;
+  dom.centerAgentTag.style.borderColor = `${m.color}30`;
+  dom.centerPath.textContent = path;
+  dom.centerPath.style.display = 'inline-flex';
+
+  // Show content pane, hide empty
+  dom.centerEmpty.style.display = 'none';
+  dom.skContent.style.display = 'none';
+  // (centerBody stays flex so it scrolls)
+
+  // Highlight active skill
+  document.querySelectorAll('.skill-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.agent === agent && el.dataset.name === name);
+  });
+
+  try {
+    const url = `/api/agents/${agent}/content?path=${encodeURIComponent(path)}`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+
+    // Success — render
+    setTitle(name, 'ok');
+    dom.skContent.innerHTML = d.html || `<pre>${escHtml(d.content || '')}</pre>`;
+    dom.skContent.style.display = 'block';
+
+    // Add context card to chat if chat is active
+    if (S.chatCurrent) addSkillContextCard(name, m.icon);
+
+  } catch(e) {
+    showError(`加载失败: ${e.message}\n\n路径: ${escHtml(path)}`);
+  }
+}
+
+function setTitle(text, state) {
+  dom.centerTitle.textContent = text;
+  dom.centerTitle.className = 'skill-title' + (state ? ' ' + state : '');
+}
+
+function showError(msg) {
+  setTitle('加载失败', 'error');
+  const lines = msg.split('\n');
+  dom.skContent.innerHTML = `<div style="color:var(--danger);padding:20px;font-size:13px;line-height:1.8">
+    ${lines.map(l => `<div>${l}</div>`).join('')}
+  </div>`;
+  dom.skContent.style.display = 'block';
+  dom.centerEmpty.style.display = 'none';
+}
+
+/* ══════════════════════════════════════════════════════════════════════ */
+/* CHAT                                                                      */
+/* ══════════════════════════════════════════════════════════════════════ */
+function updateChatWelcome(agent) {
+  const m = meta(agent);
+  dom.chatWelcomeAvatar.style.background = m.bg;
+  dom.chatWelcomeAvatar.textContent = m.icon;
+  dom.chatWelcomeAvatar.style.color = m.color;
+  dom.chatWelcomeName.textContent = cap(agent);
+  dom.chatWelcomeDesc.textContent = m.desc;
+}
+
+function renderChat(agent) {
+  updateChatWelcome(agent);
+  const conv = S.conversations[agent] || [];
+  if (!conv.length) {
+    dom.chatWelcome.style.display = 'flex';
+    dom.chatMessages.innerHTML = '';
+    return;
+  }
+  dom.chatWelcome.style.display = 'none';
+  dom.chatMessages.innerHTML = '';
+  for (const msg of conv) {
+    appendMessage(msg.role, msg.content, agent);
+  }
+  dom.chatMessages.scrollTop = dom.chatMessages.scrollHeight;
+}
+
+function appendMessage(role, content, agent) {
+  const m = meta(agent);
+  const div = document.createElement('div');
+  div.className = `chat-msg ${role}`;
+  const isErr = content.startsWith('[Error');
+  const av = role === 'assistant'
+    ? `<div class="avatar avatar-A" style="background:${m.bg};color:${m.color}">${m.icon}</div>`
+    : `<div class="avatar avatar-U">U</div>`;
+  div.innerHTML = `${av}<div class="bubble${isErr ? ' bubble-error' : ''}">${linkify(escHtml(content).replace(/\n/g,'<br>'))}</div>`;
+  dom.chatMessages.appendChild(div);
+}
+
+function addSkillContextCard(name, icon) {
+  document.querySelectorAll('.skill-ctx-card').forEach(e => e.remove());
+  const div = document.createElement('div');
+  div.className = 'chat-msg assistant skill-ctx-card';
+  div.innerHTML = `<div class="avatar avatar-A" style="background:var(--bg1);color:var(--text3)">${icon}</div>
+    <div class="bubble" style="font-size:11.5px;color:var(--text3);max-width:300px;background:var(--bg1);border-style:dashed">
+      📋 Skill: <strong style="color:var(--accent)">${escHtml(name)}</strong>
+    </div>`;
+  dom.chatMessages.appendChild(div);
+}
+
+async function sendMessage() {
+  const text = dom.chatInput.value.trim();
+  const agent = S.chatCurrent || S.agents[0] || 'eva';
+  if (!text || S.streaming) return;
+
+  dom.chatInput.value = '';
+  dom.chatInput.style.height = 'auto';
+  dom.chatSend.disabled = true;
+
+  S.conversations[agent] = S.conversations[agent] || [];
+  S.conversations[agent].push({ role: 'user', content: text });
+  dom.chatWelcome.style.display = 'none';
+  appendMessage('user', text, agent);
+
+  const skillName = S.openSkill ? S.openSkill.name : '';
+  const tyEl = addTypingIndicator(agent);
+  S.streaming = true;
+
+  try {
+    const res = await fetch('/api/chat/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agent, message: text, skill_context: skillName })
+    });
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let asstText = '';
+    S.conversations[agent].push({ role: 'assistant', content: '' });
+    const idx = S.conversations[agent].length - 1;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value);
+      for (const line of chunk.split('\n')) {
+        if (line.startsWith('data: ')) {
+          try {
+            const d = JSON.parse(line.slice(6));
+            if (d.type === 'chunk') {
+              asstText += d.content;
+              S.conversations[agent][idx].content = asstText;
+              appendMessage('assistant', asstText, agent);
+              // Scroll
+              dom.chatMessages.scrollTop = dom.chatMessages.scrollHeight;
+            } else if (d.type === 'done') {
+              break;
+            }
+          } catch(e) { /* ignore parse errors */ }
+        }
+      }
+    }
+  } catch(e) {
+    S.conversations[agent].push({ role: 'assistant', content: `[Error: ${e.message}]` });
+    appendMessage('assistant', `[Error: ${e.message}]`, agent);
+  } finally {
+    removeTypingIndicator(tyEl);
+    S.streaming = false;
+  }
+}
+
+function addTypingIndicator(agent) {
+  const m = meta(agent);
+  const div = document.createElement('div');
+  div.className = 'chat-msg assistant';
+  div.id = 'typing-indicator';
+  div.innerHTML = `<div class="avatar" style="background:${m.bg};color:${m.color}">${m.icon}</div>
+    <div class="bubble"><div class="chat-typing"><span></span><span></span><span></span></div></div>`;
+  dom.chatMessages.appendChild(div);
+  dom.chatMessages.scrollTop = dom.chatMessages.scrollHeight;
+  return div;
+}
+function removeTypingIndicator(el) {
+  if (el && el.parentNode) el.parentNode.removeChild(el);
+}
+
+/* ══════════════════════════════════════════════════════════════════════ */
+/* RESIZE HANDLES                                                            */
+/* ══════════════════════════════════════════════════════════════════════ */
+function setupResize() {
+  let drag = null;
+  const dn = id => e => { drag = id; document.body.style.userSelect = 'none'; e.preventDefault(); };
+  const mv = e => {
+    if (!drag) return;
+    const app = document.querySelector('.app').offsetWidth;
+    if (drag === 'left') {
+      const n = Math.max(180, Math.min(e.clientX, app - 280));
+      dom.agentList.parentElement.style.width = n + 'px';
+    } else if (drag === 'right') {
+      const n = Math.max(240, Math.min(app - e.clientX, app - 200));
+      $('rightPanel').style.width = n + 'px';
+    }
+  };
+  const up = () => { drag = null; document.body.style.userSelect = ''; };
+  $('resizeLeft').addEventListener('mousedown', dn('left'));
+  $('resizeRight').addEventListener('mousedown', dn('right'));
+  document.addEventListener('mousemove', mv);
+  document.addEventListener('mouseup', up);
+}
+
+/* ══════════════════════════════════════════════════════════════════════ */
+/* UTILITIES                                                                 */
+/* ══════════════════════════════════════════════════════════════════════ */
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+function linkify(text) {
+  // Very simple: turn URLs into links
+  return text.replace(/(https?:\/\/[^\s<>"]+)/g, '<a href="$1" target="_blank">$1</a>');
+}
+
+/* ── Boot ──────────────────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => { init(); });
+</script>
+</body>
+</html>
