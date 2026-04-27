@@ -765,10 +765,10 @@ function renderAgentList() {
       const isShared = (agent === eco);
       const a = document.createElement('div');
       a.className = 'agent-item' + (isShared ? ' shared-agent' : '');
-      a.innerHTML = `
+        a.innerHTML = `
         <div class="agent-header${isShared ? ' special-agent' : ''}" data-agent="${agent}">
           <span class="agent-icon" style="background:${m.bg};color:${m.color}">${m.icon}</span>
-          <span class="agent-name">${isShared ? `<span style="color:${ecoMeta.top};font-weight:800">${m.icon}</span> ` : ''}${cap(agent)}</span>
+          <span class="agent-name">${isShared ? `<span style="color:${ecoMeta.top};font-weight:800">${m.icon}</span> ` : ''}${isShared ? cap(agent) : cap(agent.replace(/^(hermes|openclaw)-/, ''))}</span>
           ${isShared ? `<span class="agent-badge" style="background:${ecoMeta.top}">共享</span>` : `<span class="agent-badge ws-badge" style="background:${ecoMeta.top}">${eco}</span>`}
           <span class="agent-count" style="display:none"></span>
           <span class="agent-arrow">▶</span>
