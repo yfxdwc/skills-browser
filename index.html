@@ -281,8 +281,9 @@ body{
 /* 气泡 */
 .chat-bubble{
   max-width:72%;padding:10px 14px;
-  font-size:14.5px;line-height:1.7;
+  font-size:14.5px;line-height:1.75;
   word-break:break-word;
+  white-space:pre-wrap;
   box-shadow:0 1px 2px rgba(0,0,0,.06);
   border-radius:12px;
 }
@@ -299,11 +300,12 @@ body{
 
 /* 气泡内的代码块 */
 .chat-bubble pre{
-  background:#F5F5F5;border-radius:8px;padding:10px 12px;
-  margin:6px 0;overflow-x:auto;font-size:.85em;
+  background:#F5F5F5;border-radius:8px;padding:10px 14px;
+  margin:8px 0;overflow-x:auto;font-size:.85em;line-height:1.65;
+  white-space:pre;
 }
 .chat-msg.user .chat-bubble pre{background:rgba(255,255,255,.15)}
-.chat-bubble pre code{font-family:var(--mono);color:inherit}
+.chat-bubble pre code{font-family:var(--mono);color:inherit;background:none;padding:0}
 .chat-bubble code:not(pre code){
   font-family:var(--mono);font-size:.88em;
   background:rgba(0,0,0,.06);padding:1px 5px;border-radius:4px;
@@ -774,9 +776,20 @@ function renderChat(agent) {
 
 function appendMessage(role, content, agent) {
   const m = meta(agent);
+  const isErr = content.startsWith('[Error');
+
+  // During streaming: update last assistant bubble in-place instead of appending
+  if (role === 'assistant') {
+    const last = dom.chatMessages.querySelector('.chat-msg.assistant:last-child');
+    if (last) {
+      last.querySelector('.chat-bubble').innerHTML = linkify(escHtml(content).replace(/\n/g,'<br>'));
+      return;
+    }
+  }
+
+  // Normal case: create new bubble
   const div = document.createElement('div');
   div.className = `chat-msg ${role}`;
-  const isErr = content.startsWith('[Error');
   const av = role === 'assistant'
     ? `<div class="chat-avatar" style="background:${m.bg};color:${m.color}">${m.icon}</div>`
     : `<div class="chat-avatar" style="background:var(--accent);color:#fff">U</div>`;
