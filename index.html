@@ -653,7 +653,7 @@ async function init() {
   renderAgentList();
 
   // Chat dropdown
-  dom.chatAgent.innerHTML = agents.map(a => `<option value="${a}">${cap(a)}</option>`).join('');
+  dom.chatAgent.innerHTML = agents.map(a => `<option value="${a}">${cap(a.replace(/^(hermes|openclaw)-/, ''))}</option>`).join('');
   if (agents.length) {
     S.chatCurrent = agents[0];
     dom.chatAgent.value = agents[0];
@@ -979,7 +979,7 @@ async function openSkill(agent, name, path) {
   dom.centerIcon.textContent = m.icon;
   dom.centerIcon.style.background = m.bg;
   dom.centerIcon.style.color = m.color;
-  dom.centerAgentTag.textContent = cap(agent);
+  dom.centerAgentTag.textContent = cap(agent.replace(/^(hermes|openclaw)-/, ''));
   dom.centerAgentTag.style.display = 'inline-flex';
   dom.centerAgentTag.style.color = m.color;
   dom.centerAgentTag.style.background = m.bg;
@@ -1136,7 +1136,7 @@ function updateChatWelcome(agent) {
   dom.chatWelcomeAvatar.style.background = m.bg;
   dom.chatWelcomeAvatar.textContent = m.icon;
   dom.chatWelcomeAvatar.style.color = m.color;
-  dom.chatWelcomeName.textContent = cap(agent);
+  dom.chatWelcomeName.textContent = cap(agent.replace(/^(hermes|openclaw)-/, ''));
   dom.chatWelcomeDesc.textContent = m.desc;
 }
 
