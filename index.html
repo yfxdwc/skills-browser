@@ -96,23 +96,23 @@ body{
 }
 .agent-header:hover{background:var(--bg1);color:var(--text);border-color:var(--border)}
 .agent-header.open{background:var(--accent-light);color:var(--accent);border-color:rgba(11,107,242,.2)}
-/* Hermes — 橙色强调 */
+/* Hermes — 金色官方强调 */
 .eco-section[data-eco="hermes"] .agent-header .agent-icon{
-  background:linear-gradient(135deg,#E85D04,#FFBA08)!important;
+  background:linear-gradient(135deg,#F5C542,#D4961C)!important;
   color:#fff!important;
-  box-shadow:0 2px 8px rgba(232,93,4,.35);
+  box-shadow:0 2px 8px rgba(212,150,28,.35);
 }
 .eco-section[data-eco="hermes"] .agent-header.special-agent.open{
-  color:#E85D04!important;
+  color:#B8860B!important;
 }
-/* OpenClaw — 蓝色强调 */
+/* OpenClaw — 红色官方强调 */
 .eco-section[data-eco="openclaw"] .agent-header .agent-icon{
-  background:linear-gradient(135deg,#0369A1,#0EA5E9)!important;
+  background:linear-gradient(135deg,#E81B25,#C81E1E)!important;
   color:#fff!important;
-  box-shadow:0 2px 8px rgba(3,105,161,.35);
+  box-shadow:0 2px 8px rgba(200,30,30,.35);
 }
 .eco-section[data-eco="openclaw"] .agent-header.special-agent.open{
-  color:#0369A1!important;
+  color:#E81B25!important;
 }
 /* 共享 badge */
 .agent-badge{
@@ -141,6 +141,7 @@ body{
   margin-bottom:4px;border-radius:var(--radius-sm);overflow:hidden;
   border-top:3px solid var(--eco-top, var(--border));
   background:var(--eco-bg, var(--bg));
+  opacity:1;
 }
 .eco-header{
   display:flex;align-items:center;padding:8px 12px;
@@ -151,10 +152,10 @@ body{
 }
 .eco-header:hover{background:rgba(0,0,0,.03)}
 .eco-label{
-  flex:1;font-size:10px;font-weight:800;letter-spacing:1.2px;
-  color:var(--eco-top, var(--text2));text-transform:uppercase;
+  flex:1;font-size:11px;font-weight:700;letter-spacing:.3px;
+  color:var(--eco-top, var(--text2));opacity:.65;
 }
-.eco-arrow{font-size:9px;color:var(--eco-top, var(--text3));transition:transform .2s}
+.eco-arrow{font-size:9px;color:var(--eco-top, var(--text3));opacity:.5;transition:transform .2s}
 .eco-header.open .eco-arrow{transform:rotate(180deg)}
 .eco-agents{display:none}
 .eco-agents .agent-item{border-radius:0}
@@ -699,8 +700,8 @@ const ECOSYSTEM = {
   sysadmin:     'hermes',
 };
 const ECOSYSTEM_COLOR = {
-  hermes:   { top: '#E85D04', bg: '#FFF8F0', label: 'HERMES' },
-  openclaw: { top: '#0369A1', bg: '#E0F2FE', label: 'OPENCLAW' },
+  hermes:   { top: '#D4961C', bg: '#FFFBF0', label: 'Hermes', icon: '🔥' },
+  openclaw: { top: '#C81E1E', bg: '#FFF5F5', label: 'OpenClaw', icon: '🦞' },
 };
 
 function renderAgentList() {
@@ -738,7 +739,7 @@ function renderAgentList() {
     hdr.className = 'eco-header';
     hdr.dataset.eco = eco;
     hdr.innerHTML = `
-      <span class="eco-label">${ecoMeta.label}</span>
+      <span class="eco-label">${ecoMeta.icon} ${ecoMeta.label}</span>
       <span class="eco-arrow">▼</span>`;
     hdr.addEventListener('click', () => toggleEcosystem(eco));
     section.appendChild(hdr);
