@@ -96,6 +96,26 @@ body{
 }
 .agent-header:hover{background:var(--bg1);color:var(--text);border-color:var(--border)}
 .agent-header.open{background:var(--accent-light);color:var(--accent);border-color:rgba(11,107,242,.2)}
+/* Hermes — 共享 skills，视觉区分：橙色强调 */
+.agent-header.hermes-agent .agent-icon{
+  background:linear-gradient(135deg,#E85D04,#FFBA08);
+  color:#fff;
+  box-shadow:0 2px 8px rgba(232,93,4,.35);
+}
+.agent-header.hermes-agent{border-color:rgba(232,93,4,.2)!important}
+.agent-header.hermes-agent.open{
+  background:#FFF8F0;
+  color:#E85D04;
+  border-color:rgba(232,93,4,.4)!important;
+}
+/* 共享 badge */
+.agent-badge{
+  font-size:10px;font-weight:700;letter-spacing:.5px;
+  background:linear-gradient(135deg,#E85D04,#FFBA08);
+  color:#fff;border-radius:20px;
+  padding:1px 7px;text-transform:uppercase;
+  box-shadow:0 1px 4px rgba(232,93,4,.25);
+}
 .agent-icon{
   width:28px;height:28px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
@@ -110,6 +130,7 @@ body{
   padding:2px 8px;border-radius:10px;font-weight:600;
   border:1px solid var(--border);
 }
+.agent-header.hermes-agent.open .agent-arrow{color:#E85D04}
 
 .agent-skills{display:none;padding:4px 0 8px 0}
 .agent-skills.open{display:block}
@@ -431,7 +452,7 @@ body{
 /* AGENT META                                                               */
 /* ══════════════════════════════════════════════════════════════════════ */
 const AGENT_META = {
-  hermes:   { color: '#374151', bg: '#F3F4F6', icon: '🧩', desc: '共享 Skill · 全局' },
+  hermes:   { color: '#E85D04', bg: '#FFF8F0', icon: '⚡', desc: '共享 Skill · 全局', special: true },
   eva:      { color: '#4F6AF0', bg: '#EEF2FF', icon: '🧠', desc: 'AI 助手 · 生活 & 思考' },
   walle:    { color: '#16A34A', bg: '#F0FDF4', icon: '⚙️',  desc: '工作助手 · 业务 & 执行' },
   cad:      { color: '#7C3AED', bg: '#F5F3FF', icon: '🎨',  desc: 'CAD Agent · 设计 & 代码' },
@@ -532,12 +553,14 @@ function renderAgentList() {
   dom.agentList.innerHTML = '';
   for (const agent of S.agents) {
     const m = meta(agent);
+    const isSpecial = m.special;
     const item = document.createElement('div');
     item.className = 'agent-item';
     item.innerHTML = `
-      <div class="agent-header" data-agent="${agent}">
+      <div class="agent-header${isSpecial ? ' hermes-agent' : ''}" data-agent="${agent}">
         <span class="agent-icon" style="background:${m.bg};color:${m.color}">${m.icon}</span>
-        <span class="agent-name">${cap(agent)}</span>
+        <span class="agent-name">${isSpecial ? '<span style="color:#E85D04;font-weight:800">⚡</span> ' : ''}${cap(agent)}</span>
+        ${isSpecial ? '<span class="agent-badge">共享</span>' : ''}
         <span class="agent-arrow">▶</span>
       </div>
       <div class="agent-skills" id="skills-${agent}"></div>`;

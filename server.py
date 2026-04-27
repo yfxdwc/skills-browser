@@ -33,7 +33,12 @@ def get_agents():
     # Also include ~/.hermes/skills/ as "hermes" agent if it has skills
     if HERMES_SKILLS.exists() and any(HERMES_SKILLS.rglob('SKILL.md')):
         agents.add('hermes')
-    return sorted(agents)
+    # Always put 'hermes' first (shared skills), then alphabetically
+    sorted_agents = sorted(agents)
+    if 'hermes' in sorted_agents:
+        sorted_agents.remove('hermes')
+        sorted_agents.insert(0, 'hermes')
+    return sorted_agents
 
 def get_skills_for_agent(agent):
     if agent == 'hermes':
