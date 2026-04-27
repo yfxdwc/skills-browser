@@ -97,38 +97,22 @@ body{
 .agent-header:hover{background:var(--bg1);color:var(--text);border-color:var(--border)}
 .agent-header.open{background:var(--accent-light);color:var(--accent);border-color:rgba(11,107,242,.2)}
 /* Hermes — 橙色强调 */
-.agent-header.special-agent[data-agent="hermes"] .agent-icon{
-  background:linear-gradient(135deg,#E85D04,#FFBA08);
-  color:#fff;
+.eco-section[data-eco="hermes"] .agent-header .agent-icon{
+  background:linear-gradient(135deg,#E85D04,#FFBA08)!important;
+  color:#fff!important;
   box-shadow:0 2px 8px rgba(232,93,4,.35);
 }
-.agent-header.special-agent[data-agent="hermes"]{border-color:rgba(232,93,4,.2)!important}
-.agent-header.special-agent[data-agent="hermes"].open{
-  color:#E85D04;
-  border-color:rgba(232,93,4,.4)!important;
+.eco-section[data-eco="hermes"] .agent-header.special-agent.open{
+  color:#E85D04!important;
 }
 /* OpenClaw — 蓝色强调 */
-.agent-header.special-agent[data-agent="openclaw"] .agent-icon{
-  background:linear-gradient(135deg,#0369A1,#0EA5E9);
-  color:#fff;
+.eco-section[data-eco="openclaw"] .agent-header .agent-icon{
+  background:linear-gradient(135deg,#0369A1,#0EA5E9)!important;
+  color:#fff!important;
   box-shadow:0 2px 8px rgba(3,105,161,.35);
 }
-.agent-header.special-agent[data-agent="openclaw"]{border-color:rgba(3,105,161,.2)!important}
-.agent-header.special-agent[data-agent="openclaw"].open{
-  color:#0369A1;
-  border-color:rgba(3,105,161,.4)!important;
-}
-.agent-header.special-agent[data-agent="openclaw-main"] .agent-icon,
-.agent-header.special-agent[data-agent="openclaw-cad"] .agent-icon{
-  background:linear-gradient(135deg,#0369A1,#0EA5E9);
-  color:#fff;
-}
-.agent-header.special-agent[data-agent="openclaw-main"],
-.agent-header.special-agent[data-agent="openclaw-cad"]{border-color:rgba(3,105,161,.2)!important}
-.agent-header.special-agent[data-agent="openclaw-main"].open,
-.agent-header.special-agent[data-agent="openclaw-cad"].open{
-  color:#0369A1;
-  border-color:rgba(3,105,161,.4)!important;
+.eco-section[data-eco="openclaw"] .agent-header.special-agent.open{
+  color:#0369A1!important;
 }
 /* 共享 badge */
 .agent-badge{
@@ -580,14 +564,14 @@ body{
 /* AGENT META                                                               */
 /* ══════════════════════════════════════════════════════════════════════ */
 const AGENT_META = {
-  hermes:       { color: '#E85D04', bg: '#FFF8F0', icon: '⚡', desc: '共享 Skill', ecosystem: 'hermes' },
-  openclaw:     { color: '#0369A1', bg: '#E0F2FE', icon: '🦾', desc: '共享 Skill', ecosystem: 'openclaw' },
-  'openclaw-main': { color: '#0369A1', bg: '#E0F2FE', icon: '🖥️', desc: 'OpenClaw · main', ecosystem: 'openclaw' },
-  'openclaw-cad':  { color: '#0369A1', bg: '#E0F2FE', icon: '🎨', desc: 'OpenClaw · cad', ecosystem: 'openclaw' },
-  eva:      { color: '#4F6AF0', bg: '#EEF2FF', icon: '🧠', desc: 'AI 助手 · 生活 & 思考', ecosystem: null },
-  walle:    { color: '#16A34A', bg: '#F0FDF4', icon: '⚙️',  desc: '工作助手 · 业务 & 执行', ecosystem: null },
-  ima:      { color: '#DB2777', bg: '#FDF2F8', icon: '💎',  desc: 'Ima Agent', ecosystem: null },
-  sysadmin: { color: '#D97706', bg: '#FFFBEB', icon: '🛡️', desc: '系统管理员', ecosystem: null },
+  hermes:       { color: '#E85D04', bg: '#FFF8F0', icon: '⚡', desc: '共享 Skill' },
+  openclaw:     { color: '#0369A1', bg: '#E0F2FE', icon: '🦾', desc: '共享 Skill' },
+  'openclaw-main': { color: '#0369A1', bg: '#E0F2FE', icon: '🖥️', desc: 'OpenClaw · main' },
+  'openclaw-cad':  { color: '#0369A1', bg: '#E0F2FE', icon: '🎨', desc: 'OpenClaw · cad' },
+  eva:          { color: '#4F6AF0', bg: '#EEF2FF', icon: '🧠', desc: 'AI 助手' },
+  walle:        { color: '#16A34A', bg: '#F0FDF4', icon: '⚙️',  desc: '工作助手' },
+  ima:          { color: '#DB2777', bg: '#FDF2F8', icon: '💎',  desc: 'Ima Agent' },
+  sysadmin:     { color: '#D97706', bg: '#FFFBEB', icon: '🛡️', desc: '系统管理员' },
 };
 function meta(agent) { return AGENT_META[agent] || { color: '#6B7280', bg: '#F9FAFB', icon: '🤖', desc: agent } }
 function cap(s) { return s ? s[0].toUpperCase() + s.slice(1) : s }
@@ -705,10 +689,14 @@ async function init() {
 /* ══════════════════════════════════════════════════════════════════════ */
 // Ecosystem: which shared agent is the "parent" of an agent
 const ECOSYSTEM = {
-  hermes: 'hermes',
-  openclaw: 'openclaw',
+  hermes:       'hermes',
+  openclaw:     'openclaw',
   'openclaw-main': 'openclaw',
-  'openclaw-cad': 'openclaw',
+  'openclaw-cad':  'openclaw',
+  eva:          'hermes',
+  walle:        'hermes',
+  ima:          'hermes',
+  sysadmin:     'hermes',
 };
 const ECOSYSTEM_COLOR = {
   hermes:   { top: '#E85D04', bg: '#FFF8F0', label: 'HERMES' },
@@ -743,6 +731,7 @@ function renderAgentList() {
     section.style.setProperty('--eco-top', ecoMeta.top);
     section.style.setProperty('--eco-bg', ecoMeta.bg);
     section.id = `eco-${eco}`;
+    section.dataset.eco = eco;
 
     // Section header (clickable to collapse all)
     const hdr = document.createElement('div');
