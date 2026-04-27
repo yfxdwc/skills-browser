@@ -21,17 +21,25 @@ HOST = '0.0.0.0'
 INDEX_HTML = Path(__file__).parent / 'index.html'
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
+HERMES_SKILLS = Path.home() / '.hermes' / 'skills'
+
 def get_agents():
     base = Path(SKILLS_BASE)
-    if not base.exists():
-        return []
-    return sorted([
-        d.name for d in base.iterdir()
-        if d.is_dir() and (d / 'skills').is_dir()
-    ])
+    agents = set()
+    if base.exists():
+        for d in base.iterdir():
+            if d.is_dir() and (d / 'skills').is_dir():
+                agents.add(d.name)
+    # Also include ~/.hermes/skills/ as "hermes" agent if it has skills
+    if HERMES_SKILLS.exists() and any(HERMES_SKILLS.rglob('SKILL.md')):
+        agents.add('hermes')
+    return sorted(agents)
 
 def get_skills_for_agent(agent):
-    skills_dir = SKILLS_BASE / agent / 'skills'
+    if agent == 'hermes':
+        skills_dir = HERMES_SKILLS
+    else:
+        skills_dir = SKILLS_BASE / agent / 'skills'
     if not skills_dir.exists():
         return [], []
     flat = []
