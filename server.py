@@ -236,9 +236,45 @@ class Handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(204)
         self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         self.end_headers()
+
+    def do_PUT(self):
+        parsed = urlparse(self.path)
+        if not parsed.path.startswith('/api/agents/'):
+            self.send_json({'error': 'not found'}, 404)
+            return
+        agent_part = parsed.path.split('/api/agents/')[1]
+        parts = agent_part.split('/')
+        agent = parts[0]
+        rest = '/'.join(parts[1:])
+        if rest != 'content':
+            self.send_json({'error': 'unknown endpoint'}, 404)
+            return
+
+        qs = parse_qs(parsed.query)
+        skill_path = qs.get('path', [''])[0]
+        if not skill_path:
+            self.send_json({'error': 'missing path'}, 400)
+            return
+
+        length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(length) if length else b''
+        try:
+            data = json.loads(body)
+        except:
+            self.send_json({'error': 'invalid JSON'}, 400)
+            return
+
+        new_content = data.get('content', '')
+        try:
+            Path(skill_path).write_text(new_content, encoding='utf-8')
+            log.info(f'[BROWSER] Saved skill: {skill_path}')
+            self.send_json({'ok': True, 'path': skill_path})
+        except Exception as e:
+            log.error(f'[BROWSER] Save failed: {e}')
+            self.send_json({'error': str(e)}, 500)
 
     def do_GET(self):
         parsed = urlparse(self.path)

@@ -268,6 +268,62 @@ body{
 .sk-content blockquote{margin:16px 0;padding:12px 18px;border-left:3px solid var(--accent);background:var(--bg0);border-radius:0 var(--radius-sm) var(--radius-sm) 0;color:var(--text2);font-style:italic;font-size:14px}
 .sk-content hr{margin:24px 0;border:none;border-top:1px solid var(--border)}
 
+/* ── 开发者模式开关 ── */
+.dev-toggle{
+  display:flex;align-items:center;gap:8px;
+  margin-left:auto;padding:0 4px;
+  cursor:pointer;user-select:none;
+}
+.dev-toggle-label{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.3px}
+.dev-toggle-switch{
+  width:36px;height:20px;background:var(--bg2);
+  border-radius:10px;position:relative;
+  transition:background .2s;cursor:pointer;
+  border:1px solid var(--border2);
+}
+.dev-toggle-switch.on{background:var(--accent);border-color:var(--accent)}
+.dev-toggle-thumb{
+  position:absolute;top:2px;left:2px;
+  width:14px;height:14px;background:#fff;
+  border-radius:50%;transition:transform .2s;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+.dev-toggle-switch.on .dev-toggle-thumb{transform:translateX(16px)}
+.dev-toggle[title]:hover .dev-toggle-label{color:var(--accent)}
+
+/* ── 编辑工具栏 ── */
+.edit-toolbar{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 20px;background:var(--bg1);
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.edit-btn{
+  padding:5px 14px;border-radius:6px;
+  font-size:13px;font-weight:600;cursor:pointer;
+  border:none;transition:all .15s;font-family:var(--font);
+}
+.edit-save{background:var(--accent);color:#fff}
+.edit-save:hover{background:var(--accent2)}
+.edit-save:disabled{opacity:.4;cursor:not-allowed}
+.edit-cancel{background:var(--bg2);color:var(--text2);border:1px solid var(--border)}
+.edit-cancel:hover{background:var(--bg1)}
+.edit-status{font-size:12px;color:var(--text3)}
+.edit-status.ok{color:#16A34A}
+.edit-status.err{color:var(--danger)}
+
+/* ── Skill 编辑器 ── */
+.sk-editor-wrap{
+  flex:1;display:flex;overflow:hidden;padding:16px 20px;
+}
+.sk-editor{
+  flex:1;background:#1A1D27;color:#E4E8F0;
+  border:none;border-radius:var(--radius);
+  padding:16px 20px;font-family:var(--mono);
+  font-size:13.5px;line-height:1.75;
+  resize:none;outline:none;
+  tab-size:2;
+}
+
 /* ══════════════════════════════════════════════════════════════════════ */
 /* RIGHT PANEL — 飞书风格                                                   */
 /* ══════════════════════════════════════════════════════════════════════ */
@@ -432,6 +488,19 @@ body{
     <span class="skill-title" id="centerTitle">选择左侧 Skill</span>
     <span class="skill-agent-tag" id="centerAgentTag"></span>
     <span class="skill-path" id="centerPath"></span>
+    <!-- 开发者模式 -->
+    <div class="dev-toggle" id="devToggle" title="开发者模式">
+      <span class="dev-toggle-label">编辑</span>
+      <div class="dev-toggle-switch" id="devSwitch" role="switch" aria-checked="false" tabindex="0">
+        <div class="dev-toggle-thumb"></div>
+      </div>
+    </div>
+  </div>
+  <!-- 编辑操作栏（隐藏） -->
+  <div class="edit-toolbar" id="editToolbar" style="display:none">
+    <button class="edit-btn edit-save" id="editSave">💾 保存</button>
+    <button class="edit-btn edit-cancel" id="editCancel">取消</button>
+    <span class="edit-status" id="editStatus"></span>
   </div>
   <div class="center-body" id="centerBody">
     <div class="center-empty" id="centerEmpty">
@@ -439,8 +508,12 @@ body{
       <div class="center-empty-title">选择 Skill 查看内容</div>
       <div class="center-empty-desc">点击左侧 Agent 展开列表，再点击任意 Skill 即可查看内容并开始对话</div>
     </div>
-    <!-- skill content injected here -->
+    <!-- skill 渲染内容（只读） -->
     <div class="sk-content" id="skContent" style="display:none"></div>
+    <!-- skill 编辑器（隐藏） -->
+    <div class="sk-editor-wrap" id="skEditorWrap" style="display:none">
+      <textarea class="sk-editor" id="skEditor" spellcheck="false"></textarea>
+    </div>
   </div>
 </div>
 
@@ -499,6 +572,14 @@ const dom = {
   centerBody:     $('centerBody'),
   centerEmpty:    $('centerEmpty'),
   skContent:      $('skContent'),
+  devToggle:      $('devToggle'),
+  devSwitch:      $('devSwitch'),
+  editToolbar:    $('editToolbar'),
+  editSave:       $('editSave'),
+  editCancel:     $('editCancel'),
+  editStatus:     $('editStatus'),
+  skEditorWrap:   $('skEditorWrap'),
+  skEditor:       $('skEditor'),
   chatAgent:      $('chatAgent'),
   chatArea:       $('chatArea'),
   chatMessages:   $('chatMessages'),
@@ -516,9 +597,12 @@ const dom = {
 const S = {
   agents: [],           // ['cad','eva','ima','sysadmin','walle']
   skills: {},           // { agent: [ {name,path,depth}, … ] }
-  skillMap: {},         // { `si-${agent}-${i}`: path }   — avoids dataset.path issues
+  skillMap: {},         // { `si-${agent}-${i}`: path }
   openAgent: null,      // currently selected agent
   openSkill: null,      // { agent, name, path }
+  editMode: false,      // developer mode
+  editOriginal: '',     // original content when edit started
+  editDirty: false,     // unsaved changes
 
   // Chat
   chatAgents: [],       // same as agents but ordered for dropdown
@@ -564,6 +648,18 @@ async function init() {
     }
   });
   dom.chatSend.addEventListener('click', () => { if (dom.chatInput.value.trim()) sendMessage(); });
+
+  // Developer mode toggle
+  dom.devToggle.addEventListener('click', () => toggleEditMode());
+  dom.devSwitch.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleEditMode(); } });
+  dom.editSave.addEventListener('click', () => saveSkill());
+  dom.editCancel.addEventListener('click', () => cancelEdit());
+  dom.skEditor.addEventListener('input', () => {
+    S.editDirty = dom.skEditor.value !== S.editOriginal;
+    dom.editStatus.textContent = S.editDirty ? '● 未保存' : '';
+    dom.editStatus.className = 'edit-status';
+    dom.editSave.disabled = !S.editDirty;
+  });
 
   // Resize handles
   setupResize();
@@ -765,10 +861,26 @@ async function openSkill(agent, name, path) {
     const d = await r.json();
     if (d.error) throw new Error(d.error);
 
-    // Success — render
+    // Success — render or edit
     setTitle(name, 'ok');
-    dom.skContent.innerHTML = d.html || `<pre>${escHtml(d.content || '')}</pre>`;
-    dom.skContent.style.display = 'block';
+    if (S.editMode) {
+      // Show editor with raw markdown
+      dom.skContent.style.display = 'none';
+      dom.skEditorWrap.style.display = 'flex';
+      dom.editToolbar.style.display = 'flex';
+      dom.skEditor.value = d.raw || d.content || '';
+      S.editOriginal = dom.skEditor.value;
+      S.editDirty = false;
+      dom.editSave.disabled = true;
+      dom.editStatus.textContent = '';
+      dom.editStatus.className = 'edit-status';
+    } else {
+      // Show rendered HTML
+      dom.skContent.innerHTML = d.html || `<pre>${escHtml(d.content || '')}</pre>`;
+      dom.skContent.style.display = 'block';
+      dom.skEditorWrap.style.display = 'none';
+      dom.editToolbar.style.display = 'none';
+    }
 
     // Add context card to chat if chat is active
     if (S.chatCurrent) addSkillContextCard(name, m.icon);
@@ -791,6 +903,85 @@ function showError(msg) {
   </div>`;
   dom.skContent.style.display = 'block';
   dom.centerEmpty.style.display = 'none';
+}
+
+/* ══════════════════════════════════════════════════════════════════════ */
+/* DEVELOPER MODE                                                          */
+/* ══════════════════════════════════════════════════════════════════════ */
+function toggleEditMode() {
+  S.editMode = !S.editMode;
+  dom.devSwitch.classList.toggle('on', S.editMode);
+  dom.devSwitch.setAttribute('aria-checked', S.editMode);
+
+  if (!S.editMode) {
+    // Switching OFF: close editor, show content
+    dom.editToolbar.style.display = 'none';
+    dom.skEditorWrap.style.display = 'none';
+    dom.skContent.style.display = 'none';
+    dom.centerEmpty.style.display = 'none';
+    // Re-load in view mode
+    if (S.openSkill) {
+      const { agent, name, path } = S.openSkill;
+      openSkill(agent, name, path);
+    }
+  } else {
+    // Switching ON: show editor
+    dom.editToolbar.style.display = 'flex';
+    if (S.openSkill) {
+      const { agent, name, path } = S.openSkill;
+      openSkill(agent, name, path);
+    } else {
+      dom.skEditorWrap.style.display = 'flex';
+      dom.skContent.style.display = 'none';
+      dom.centerEmpty.style.display = 'none';
+      dom.skEditor.value = '# 选择一个 Skill 开始编辑\n从左侧选择一个 Skill，这里会显示其原始 Markdown 内容。';
+      S.editOriginal = dom.skEditor.value;
+      S.editDirty = false;
+    }
+  }
+}
+
+async function saveSkill() {
+  if (!S.openSkill || !S.editDirty) return;
+  const { agent, name, path } = S.openSkill;
+  dom.editSave.disabled = true;
+  dom.editStatus.textContent = '保存中…';
+  dom.editStatus.className = 'edit-status';
+  try {
+    const url = `/api/agents/${agent}/content?path=${encodeURIComponent(path)}`;
+    const r = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: dom.skEditor.value }),
+    });
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    S.editOriginal = dom.skEditor.value;
+    S.editDirty = false;
+    dom.editStatus.textContent = '✓ 已保存';
+    dom.editStatus.className = 'edit-status ok';
+    // Re-render HTML in background so view mode is fresh
+    const vr = await fetch(url);
+    const vd = await vr.json();
+    dom.skContent.innerHTML = vd.html || `<pre>${escHtml(vd.content || '')}</pre>`;
+  } catch(e) {
+    dom.editStatus.textContent = '✗ 保存失败: ' + e.message;
+    dom.editStatus.className = 'edit-status err';
+    dom.editSave.disabled = false;
+  }
+}
+
+function cancelEdit() {
+  if (!S.openSkill) return;
+  const { agent, name, path } = S.openSkill;
+  // Reset editor to original
+  dom.skEditor.value = S.editOriginal;
+  S.editDirty = false;
+  dom.editStatus.textContent = '';
+  dom.editStatus.className = 'edit-status';
+  dom.editSave.disabled = true;
+  // Switch back to view mode
+  toggleEditMode();
 }
 
 /* ══════════════════════════════════════════════════════════════════════ */
