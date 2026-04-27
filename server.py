@@ -22,6 +22,11 @@ INDEX_HTML = Path(__file__).parent / 'index.html'
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 HERMES_SKILLS = Path.home() / '.hermes' / 'skills'
+OPENCLAW_SKILLS = Path.home() / '.openclaw'
+OPENCLAW_WORKSPACES = [
+    ('main',   Path.home() / '.openclaw' / 'workspace' / 'skills'),
+    ('cad',    Path.home() / '.openclaw' / 'workspace_cad' / 'skills'),
+]
 
 def get_agents():
     base = Path(SKILLS_BASE)
@@ -33,7 +38,10 @@ def get_agents():
     # Also include ~/.hermes/skills/ as "hermes" agent if it has skills
     if HERMES_SKILLS.exists() and any(HERMES_SKILLS.rglob('SKILL.md')):
         agents.add('hermes')
-    # Always put 'hermes' first (shared skills), then alphabetically
+    # Also include OpenClaw workspace skills
+    if any(ws.exists() for _, ws in OPENCLAW_WORKSPACES):
+        agents.add('openclaw')
+    # Always put 'hermes' first, then alphabetically
     sorted_agents = sorted(agents)
     if 'hermes' in sorted_agents:
         sorted_agents.remove('hermes')
@@ -43,6 +51,28 @@ def get_agents():
 def get_skills_for_agent(agent):
     if agent == 'hermes':
         skills_dir = HERMES_SKILLS
+    elif agent == 'openclaw':
+        # Merge multiple OpenClaw workspaces into one virtual agent
+        flat = []
+        for ws_name, ws_dir in OPENCLAW_WORKSPACES:
+            if not ws_dir.exists():
+                continue
+            for md_path in sorted(ws_dir.rglob('SKILL.md')):
+                rel = md_path.parent.relative_to(ws_dir)
+                parts = rel.parts
+                name = parts[-1] if parts else md_path.parent.name
+                # Prefix name with workspace to avoid collisions
+                display_name = f'{ws_name}/{name}' if len(parts) == 1 else f'{ws_name}/{"/".join(parts)}'
+                flat.append({
+                    'name': display_name,
+                    'orig_name': name,
+                    'path': str(md_path.parent),
+                    'relPath': f'{ws_name}/{rel}',
+                    'depth': len(parts) + 1,
+                    'workspace': ws_name,
+                })
+        flat.sort(key=lambda s: (s['workspace'], s['relPath']))
+        return flat, _build_tree(flat)
     else:
         skills_dir = SKILLS_BASE / agent / 'skills'
     if not skills_dir.exists():

@@ -96,17 +96,29 @@ body{
 }
 .agent-header:hover{background:var(--bg1);color:var(--text);border-color:var(--border)}
 .agent-header.open{background:var(--accent-light);color:var(--accent);border-color:rgba(11,107,242,.2)}
-/* Hermes — 共享 skills，视觉区分：橙色强调 */
-.agent-header.hermes-agent .agent-icon{
+/* Hermes — 共享 skills：橙色强调 */
+.agent-header.special-agent[data-agent="hermes"] .agent-icon{
   background:linear-gradient(135deg,#E85D04,#FFBA08);
   color:#fff;
   box-shadow:0 2px 8px rgba(232,93,4,.35);
 }
-.agent-header.hermes-agent{border-color:rgba(232,93,4,.2)!important}
-.agent-header.hermes-agent.open{
+.agent-header.special-agent[data-agent="hermes"]{border-color:rgba(232,93,4,.2)!important}
+.agent-header.special-agent[data-agent="hermes"].open{
   background:#FFF8F0;
   color:#E85D04;
   border-color:rgba(232,93,4,.4)!important;
+}
+/* OpenClaw — Workspace skills：蓝色强调 */
+.agent-header.special-agent[data-agent="openclaw"] .agent-icon{
+  background:linear-gradient(135deg,#0369A1,#0EA5E9);
+  color:#fff;
+  box-shadow:0 2px 8px rgba(3,105,161,.35);
+}
+.agent-header.special-agent[data-agent="openclaw"]{border-color:rgba(3,105,161,.2)!important}
+.agent-header.special-agent[data-agent="openclaw"].open{
+  background:#E0F2FE;
+  color:#0369A1;
+  border-color:rgba(3,105,161,.4)!important;
 }
 /* 共享 badge */
 .agent-badge{
@@ -130,7 +142,8 @@ body{
   padding:2px 8px;border-radius:10px;font-weight:600;
   border:1px solid var(--border);
 }
-.agent-header.hermes-agent.open .agent-arrow{color:#E85D04}
+.agent-header.special-agent[data-agent="hermes"].open .agent-arrow{color:#E85D04}
+.agent-header.special-agent[data-agent="openclaw"].open .agent-arrow{color:#0369A1}
 
 .agent-skills{display:none;padding:4px 0 8px 0}
 .agent-skills.open{display:block}
@@ -453,6 +466,7 @@ body{
 /* ══════════════════════════════════════════════════════════════════════ */
 const AGENT_META = {
   hermes:   { color: '#E85D04', bg: '#FFF8F0', icon: '⚡', desc: '共享 Skill · 全局', special: true },
+  openclaw: { color: '#0369A1', bg: '#E0F2FE', icon: '🦾', desc: 'OpenClaw · Workspace', special: true },
   eva:      { color: '#4F6AF0', bg: '#EEF2FF', icon: '🧠', desc: 'AI 助手 · 生活 & 思考' },
   walle:    { color: '#16A34A', bg: '#F0FDF4', icon: '⚙️',  desc: '工作助手 · 业务 & 执行' },
   cad:      { color: '#7C3AED', bg: '#F5F3FF', icon: '🎨',  desc: 'CAD Agent · 设计 & 代码' },
@@ -557,10 +571,10 @@ function renderAgentList() {
     const item = document.createElement('div');
     item.className = 'agent-item';
     item.innerHTML = `
-      <div class="agent-header${isSpecial ? ' hermes-agent' : ''}" data-agent="${agent}">
+      <div class="agent-header${isSpecial ? ' special-agent' : ''}" data-agent="${agent}">
         <span class="agent-icon" style="background:${m.bg};color:${m.color}">${m.icon}</span>
-        <span class="agent-name">${isSpecial ? '<span style="color:#E85D04;font-weight:800">⚡</span> ' : ''}${cap(agent)}</span>
-        ${isSpecial ? '<span class="agent-badge">共享</span>' : ''}
+        <span class="agent-name">${isSpecial ? `<span style="color:${agent==='hermes'?'#E85D04':'#0369A1'};font-weight:800">${m.icon}</span> ` : ''}${cap(agent)}</span>
+        ${isSpecial ? `<span class="agent-badge" style="${agent==='hermes'?'background:linear-gradient(135deg,#E85D04,#FFBA08)':'background:linear-gradient(135deg,#0369A1,#0EA5E9)'}">${agent==='hermes'?'共享':'WS'}</span>` : ''}
         <span class="agent-arrow">▶</span>
       </div>
       <div class="agent-skills" id="skills-${agent}"></div>`;
