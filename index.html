@@ -732,7 +732,7 @@ function renderAgentList() {
     }
   }
 
-  // Render ecosystem sections
+    // Render ecosystem sections
   for (const eco of Object.keys(ecosystemAgents)) {
     const agents_in_eco = ecosystemAgents[eco];
     const ecoMeta = ECOSYSTEM_COLOR[eco];
@@ -744,7 +744,7 @@ function renderAgentList() {
     section.style.setProperty('--eco-bg', ecoMeta.bg);
     section.id = `eco-${eco}`;
 
-    // Section header (clickable to collapse)
+    // Section header (clickable to collapse all)
     const hdr = document.createElement('div');
     hdr.className = 'eco-header';
     hdr.dataset.eco = eco;
@@ -754,7 +754,7 @@ function renderAgentList() {
     hdr.addEventListener('click', () => toggleEcosystem(eco));
     section.appendChild(hdr);
 
-    // Agent items
+    // Agent items (always under ecosystem header)
     const list = document.createElement('div');
     list.className = 'eco-agents';
     list.id = `eco-agents-${eco}`;
@@ -765,7 +765,7 @@ function renderAgentList() {
       const isShared = (agent === eco);
       const a = document.createElement('div');
       a.className = 'agent-item' + (isShared ? ' shared-agent' : '');
-        a.innerHTML = `
+      a.innerHTML = `
         <div class="agent-header${isShared ? ' special-agent' : ''}" data-agent="${agent}">
           <span class="agent-icon" style="background:${m.bg};color:${m.color}">${m.icon}</span>
           <span class="agent-name">${isShared ? `<span style="color:${ecoMeta.top};font-weight:800">${m.icon}</span> ` : ''}${isShared ? cap(agent) : cap(agent.replace(/^(hermes|openclaw)-/, ''))}</span>
