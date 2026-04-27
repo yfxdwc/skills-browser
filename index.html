@@ -653,7 +653,10 @@ async function init() {
   renderAgentList();
 
   // Chat dropdown
-  dom.chatAgent.innerHTML = agents.map(a => `<option value="${a}">${cap(a.replace(/^(hermes|openclaw)-/, ''))}</option>`).join('');
+  dom.chatAgent.innerHTML = agents
+    .filter(a => a !== 'openclaw' && a !== 'hermes')
+    .map(a => `<option value="${a}">${cap(a.replace(/^(hermes|openclaw)-/, ''))}</option>`)
+    .join('');
   if (agents.length) {
     S.chatCurrent = agents[0];
     dom.chatAgent.value = agents[0];
