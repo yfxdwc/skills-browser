@@ -95,53 +95,56 @@ body{
   border:1px solid transparent;
 }
 .agent-header:hover{background:var(--bg1);color:var(--text);border-color:var(--border)}
-.agent-header.open{background:var(--accent-light);color:var(--accent);border-color:rgba(11,107,242,.2)}
-/* Hermes — 金色官方强调 */
-.eco-section[data-eco="hermes"] .agent-header .agent-icon{
-  background:linear-gradient(135deg,#F5C542,#D4961C)!important;
-  color:#fff!important;
-  box-shadow:0 2px 8px rgba(212,150,28,.35);
+.agent-header.open{
+  background:var(--eco-bg, var(--bg1))!important;
+  color:var(--eco-top, var(--accent))!important;
+  border-color:var(--eco-top, var(--accent));
+  border-width:1px;
+  opacity:.9;
 }
-.eco-section[data-eco="hermes"] .agent-header.special-agent.open{
-  color:#B8860B!important;
-}
-/* OpenClaw — 红色官方强调 */
-.eco-section[data-eco="openclaw"] .agent-header .agent-icon{
-  background:linear-gradient(135deg,#E81B25,#C81E1E)!important;
-  color:#fff!important;
-  box-shadow:0 2px 8px rgba(200,30,30,.35);
-}
-.eco-section[data-eco="openclaw"] .agent-header.special-agent.open{
-  color:#E81B25!important;
-}
-/* 共享 badge */
-.agent-badge{
-  font-size:10px;font-weight:700;letter-spacing:.5px;
-  background:linear-gradient(135deg,#E85D04,#FFBA08);
-  color:#fff;border-radius:20px;
-  padding:1px 7px;text-transform:uppercase;
-  box-shadow:0 1px 4px rgba(232,93,4,.25);
-}
+
+/* Agent icon — NotebookLM 简洁圆形，主题灰蓝 */
 .agent-icon{
   width:28px;height:28px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
   font-size:12px;font-weight:700;flex-shrink:0;
+  background:var(--bg2)!important;
+  color:var(--text3)!important;
+  border:1px solid var(--border);
+  transition:background .15s, border-color .15s;
 }
-.agent-header.open .agent-icon{box-shadow:0 0 0 3px rgba(11,107,242,.15)}
+/* 选中：ecosystem 弱色背景 */
+.agent-header.open .agent-icon{
+  background:var(--eco-bg, var(--bg))!important;
+  border-color:var(--eco-top, var(--accent));
+  color:var(--eco-top, var(--accent))!important;
+}
+
+/* 共享 badge — 淡化至与主题融合 */
+.agent-badge{
+  font-size:10px;font-weight:700;letter-spacing:.5px;
+  background:var(--bg2)!important;
+  color:var(--text3)!important;
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:1px 7px;
+  box-shadow:none;
+}
+
 .agent-name{flex:1}
 .agent-arrow{color:var(--text3);font-size:10px;transition:transform .2s}
-.agent-header.open .agent-arrow{transform:rotate(90deg);color:var(--accent)}
+.agent-header.open .agent-arrow{transform:rotate(90deg);color:var(--eco-top, var(--accent))}
 .agent-count{
   font-size:11px;color:var(--text3);background:var(--bg1);
   padding:2px 8px;border-radius:10px;font-weight:600;
   border:1px solid var(--border);
 }
-/* Ecosystem sections */
+/* Ecosystem sections — 淡化融入整体 */
 .eco-section{
   margin-bottom:4px;border-radius:var(--radius-sm);overflow:hidden;
-  border-top:3px solid var(--eco-top, var(--border));
+  border-top:2px solid var(--eco-top, var(--border));
   background:var(--eco-bg, var(--bg));
-  opacity:1;
+  opacity:.88;
 }
 .eco-header{
   display:flex;align-items:center;padding:8px 12px;
